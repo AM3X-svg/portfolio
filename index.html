@@ -31,18 +31,10 @@
     }
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background-image: url("IMG_0764.jpg");
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center;
-
-      filter: blur(5px);
-      transform: scale(1.05); /* évite les bords visibles après le blur */
+      background-repeat: no-repeat; background-size: cover; background-position: center;
+      filter: blur(5px); transform: scale(1.05);
     }
     /* TASKBAR */
     #taskbar {
@@ -227,22 +219,53 @@
     .contact-url { font-size: 11px; color: var(--text2); }
     /* BUBBLE DECO */
     .bubble { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.6), rgba(180,220,255,.15) 60%, transparent); border: 1px solid rgba(255,255,255,.4); }
-    /* FOOTER */
     footer { text-align: center; padding: 1rem 0 52px; color: var(--text2); font-size: 11px; position: relative; z-index: 1; }
-    /* FADE IN */
     .fadein { opacity:0; transform:translateY(18px); transition: opacity .5s ease, transform .5s ease; }
     .fadein.show { opacity:1; transform:none; }
 
-    /* 2048 tiles - micro animations */
-    #grid { position: relative; }
-    #grid > div { transition: transform 180ms ease, background 120ms ease, opacity 180ms ease; will-change: transform, opacity; display:flex; align-items:center; justify-content:center; border-radius:6px; font-weight:700; font-size:20px; }
-    .tile-new { animation: slideIn 180ms ease both; }
-    .tile-pop { animation: pop 220ms ease both; }
-    .tile-merge { animation: pop 260ms cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes slideIn { from { transform: translateY(12px); opacity:0 } to { transform: none; opacity:1 } }
-    @keyframes pop { 0% { transform: scale(.5); opacity:0 } 50% { transform: scale(1.06); opacity:1 } 100% { transform: scale(1); opacity:1 } }
+    /* ===== 2048 ===== */
+    #g2048-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 10px;
+      background: rgba(180,200,220,.35);
+      border-radius: 8px;
+      width: 300px;
+      height: 300px;
+      flex-shrink: 0;
+    }
+    .g2048-cell {
+      border-radius: 6px;
+      background: rgba(255,255,255,.45);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px;
+      transition: background .12s;
+      user-select: none;
+    }
+    .g2048-tile {
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; user-select: none;
+      animation: tileAppear .18s ease both;
+    }
+    @keyframes tileAppear {
+      from { transform: scale(.5); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    .g2048-tile.merged { animation: tileMerge .22s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes tileMerge {
+      0%   { transform: scale(.5); opacity: 0; }
+      60%  { transform: scale(1.12); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    #lb-list { background: rgba(255,255,255,.6); padding: 8px; border-radius: 8px; max-height: 260px; overflow: auto; min-width: 190px; }
+    #lb-list .lb-row { display: flex; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid rgba(0,0,0,.05); font-size: 12px; }
+    #lb-list .lb-row:last-child { border-bottom: none; }
+    #lb-list .lb-rank { color: var(--text2); margin-right: 4px; }
+    #lb-list .lb-gold { color: #b8860b; font-weight: 800; }
+    #lb-status { font-size: 11px; color: var(--text2); margin-top: 4px; }
 
-    /* SCROLLBAR */
     ::-webkit-scrollbar { width: 14px; }
     ::-webkit-scrollbar-track { background: linear-gradient(90deg, #c8dcf0, #d8ecff); border: 1px solid #b0ccee; }
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #c8e0f8 0%, #80b8e8 40%, #60a0d8 60%, #a0caf0 100%); border: 1px solid #6090c8; border-radius: 2px; }
@@ -252,6 +275,7 @@
       .btn-row { justify-content: center; }
       .proj-grid { grid-template-columns: 1fr; }
       .taskbar-btn { display: none; }
+      #g2048-board { width: 240px; height: 240px; }
     }
   </style>
 </head>
@@ -440,36 +464,58 @@
     <div class="status-bar">🔒 alexandre.klotz &middot; Formation cybersécurité</div>
   </div>
 
-  <!-- MINI-JEU 2048 (amélioré) -->
+  <!-- 2048 -->
   <div id="game-win" class="win fadein">
-    <div class="win-title">🎮 Mini-jeu — 2048</div>
+    <div class="win-title">
+      🎮 Mini-jeu — 2048
+      <div class="win-controls"><button class="win-btn win-btn-min">─</button><button class="win-btn win-btn-max">□</button><button class="win-btn win-btn-cls">✕</button></div>
+    </div>
     <div class="win-body">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <button id="newGame" class="xp-btn">Nouvelle partie</button>
-        <div style="font-weight:700;color:var(--text2)">Score: <span id="score">0</span></div>
-        <div style="font-weight:700;color:var(--text2)">Meilleur: <span id="best">0</span></div>
+      <!-- Top bar -->
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <button id="g-new" class="xp-btn">🔄 Nouvelle partie</button>
+        <div style="font-weight:700;color:var(--text2)">Score : <span id="g-score">0</span></div>
+        <div style="font-weight:700;color:var(--text2)">Meilleur : <span id="g-best">0</span></div>
+        <span id="g-msg" style="color:#c04000;font-weight:700;font-size:12px"></span>
       </div>
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="username" placeholder="Pseudo" style="padding:6px;border-radius:6px;border:1px solid rgba(0,0,0,.08)" />
-        </div>
-        <div style="font-weight:700;color:var(--text2)">Entrez votre pseudo pour soumettre un score</div>
-      </div>
+      <!-- Board + Leaderboard -->
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
 
-      <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+        <!-- Board -->
         <div>
-          <div id="grid" style="width:360px;height:360px;position:relative;border-radius:8px;background:rgba(0,0,0,0.04);padding:10px;box-sizing:border-box"></div>
+          <div id="g2048-board">
+            <!-- 16 background cells -->
+            <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+            <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+            <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+            <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+          </div>
+          <p style="font-size:11px;color:var(--text2);margin-top:6px">Flèches clavier ou swipe mobile</p>
         </div>
-        <div style="min-width:200px">
-          <div style="font-weight:800;margin-bottom:6px">Classement</div>
-          <div id="leaderboard" style="background:rgba(255,255,255,.6);padding:8px;border-radius:8px;max-height:260px;overflow:auto;min-width:200px"></div>
-          <div style="margin-top:8px;display:flex;gap:8px"><button id="submitScore" class="xp-btn">Soumettre score</button><button id="clearBoard" class="xp-btn" style="background:#ffdede">Effacer classement</button></div>
-          <p style="color:var(--text2);margin-top:8px;font-size:12px">Le classement est stocké localement (localStorage). Entrez un pseudo et cliquez "Soumettre score" (si l'API globale est configurée, le score y sera envoyé).</p>
+
+        <!-- Leaderboard -->
+        <div style="flex:1;min-width:190px">
+          <div style="font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+            🏆 Classement global
+            <button id="g-refresh" class="xp-btn" style="padding:2px 8px;font-size:11px">↻</button>
+          </div>
+          <div id="lb-list"><div style="color:var(--text2);font-size:12px;padding:6px">Chargement…</div></div>
+          <div id="lb-status"></div>
+
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+            <input id="g-pseudo" placeholder="Votre pseudo" maxlength="30"
+                   style="padding:5px 8px;border-radius:4px;border:1px solid rgba(0,100,200,.3);font-size:12px;font-family:Tahoma,sans-serif;background:rgba(255,255,255,.7)"/>
+            <div style="display:flex;gap:6px">
+              <button id="g-submit" class="xp-btn">📤 Soumettre score</button>
+            </div>
+          </div>
+          <p style="color:var(--text2);margin-top:8px;font-size:11px;line-height:1.5">
+            Un score par pseudo — seul le meilleur est conservé.<br>
+            Classement partagé entre tous les visiteurs.
+          </p>
         </div>
       </div>
-
-      <p id="gameMsg" style="color:var(--text2);font-size:13px;margin-top:8px"></p>
     </div>
   </div>
 
@@ -477,135 +523,325 @@
 
 <footer>© 2025 Alexandre KLOTZ &middot; HTML / CSS / JS vanilla &middot; Déployé sur Vercel</footer>
 
-<!-- Dev helpers: debug overlay + local fetch mock -->
 <script>
-// Debug overlay for runtime errors
-(function(){ if(window.__debugOverlayInstalled) return; window.__debugOverlayInstalled=true; window.__showError=function(msg){ let el=document.getElementById('js-error-overlay'); if(!el){ el=document.createElement('pre'); el.id='js-error-overlay'; el.style.position='fixed'; el.style.right='12px'; el.style.bottom='12px'; el.style.zIndex=9999; el.style.background='rgba(0,0,0,0.85)'; el.style.color='#fff'; el.style.padding='10px'; el.style.borderRadius='8px'; el.style.maxWidth='420px'; el.style.maxHeight='220px'; el.style.overflow='auto'; el.style.fontSize='12px'; el.style.boxShadow='0 6px 24px rgba(0,0,0,0.6)'; document.body.appendChild(el);} el.textContent = typeof msg==='string'?msg:JSON.stringify(msg,null,2); el.style.display='block'; console.error(msg); };
-window.addEventListener('error', function(e){ __showError(e.message+'\n at '+e.filename+':'+e.lineno+':'+e.colno); });
-window.addEventListener('unhandledrejection', function(e){ __showError('UnhandledRejection: '+(e.reason && e.reason.message?e.reason.message:JSON.stringify(e.reason))); });
-// local fetch mock for file:// previews
-if(location.protocol==='file:'){ const originalFetch=window.fetch.bind(window); window.fetch = async function(input, init){ try{ if(typeof input==='string' && input.startsWith('/api/leaderboard')){ if(init && init.method && init.method.toUpperCase()==='POST'){ const body = JSON.parse(init.body||'{}'); const list = JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); list.push({user: String(body.user).slice(0,40), score: parseInt(body.score,10)||0, date: new Date().toISOString()}); localStorage.setItem('mini2048-leaderboard', JSON.stringify(list)); return new Response(JSON.stringify({success:true}), {status:200, headers:{'Content-Type':'application/json'}}); } else { const list = JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); return new Response(JSON.stringify(list), {status:200, headers:{'Content-Type':'application/json'}}); } }catch(err){ return Promise.reject(err);} return originalFetch(input, init); } }
-})();
+  // ===========================
+  //   UTILS
+  // ===========================
+  function esc(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
+  // ===========================
+  //   TASKBAR + NAV
+  // ===========================
+  function scroll_to(id){ document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'}); }
+  function tick(){ var d=new Date(); document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  tick(); setInterval(tick,10000);
+  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.classList.add('show');},i*60);obs.unobserve(e.target);}});},{threshold:0.08});
+  document.querySelectorAll('.fadein').forEach(function(el){obs.observe(el);});
+  document.querySelectorAll('.nav-tab').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.nav-tab').forEach(function(x){x.classList.remove('active');});a.classList.add('active');});});
 </script>
 
-<!-- 2048 game script (animations + leaderboard + login) -->
 <script>
-(function(){
-  const size=4, gap=10, pad=10; let tileIdCounter=1;
-  let gridIds, tilesById={}, score=0;
-  const gridEl=document.getElementById('grid');
-  const scoreEl=document.getElementById('score');
-  const bestEl=document.getElementById('best');
-  const msgEl=document.getElementById('gameMsg');
-  const usernameInput=document.getElementById('username');
-  const loginBtn=document.getElementById('loginBtn');
-  const logoutBtn=document.getElementById('logoutBtn');
-  const currentUserEl=document.getElementById('currentUser');
-  const leaderboardEl=document.getElementById('leaderboard');
-  const submitBtn=document.getElementById('submitScore');
-  const clearBoardBtn=document.getElementById('clearBoard');
+  // ===========================
+  //   2048 GAME ENGINE
+  // ===========================
+  (function(){
+    'use strict';
 
-  function makeGridIds(){ return Array.from({length:size},()=>Array(size).fill(null)); }
-  function getCellSize(){ const w=gridEl.clientWidth; return Math.floor((w - pad*2 - gap*(size-1))/size); }
-  function posToXY(r,c){ const cell=getCellSize(); const x = pad + c*(cell+gap); const y = pad + r*(cell+gap); return {x,y,cell}; }
+    // ---- DOM refs ----
+    const boardEl   = document.getElementById('g2048-board');
+    const scoreEl   = document.getElementById('g-score');
+    const bestEl    = document.getElementById('g-best');
+    const msgEl     = document.getElementById('g-msg');
+    const lbEl      = document.getElementById('lb-list');
+    const lbStatus  = document.getElementById('lb-status');
+    const newBtn    = document.getElementById('g-new');
+    const submitBtn = document.getElementById('g-submit');
+    const refreshBtn= document.getElementById('g-refresh');
+    const pseudoIn  = document.getElementById('g-pseudo');
 
-  function createBackground(){ gridEl.innerHTML=''; gridEl.style.position='relative'; const cell=getCellSize(); for(let r=0;r<size;r++){ for(let c=0;c<size;c++){ const b=document.createElement('div'); b.style.position='absolute'; b.style.left=posToXY(r,c).x+'px'; b.style.top=posToXY(r,c).y+'px'; b.style.width=posToXY(r,c).cell+'px'; b.style.height=posToXY(r,c).cell+'px'; b.style.borderRadius='6px'; b.style.background='rgba(255,255,255,0.6)'; b.style.boxSizing='border-box'; gridEl.appendChild(b); } }
-  }
+    // ---- State ----
+    const SIZE = 4;
+    let board = []; // flat 16-element array
+    let score = 0;
+    let best  = parseInt(localStorage.getItem('ak2048best')||'0',10);
 
-  function createTileElement(id,value,r,c){ const t=document.createElement('div'); t.className='tile tile-new'; t.dataset.id=id; t.textContent=value; t.style.position='absolute'; t.style.zIndex=10; const p=posToXY(r,c); t.style.width=p.cell+'px'; t.style.height=p.cell+'px'; t.style.lineHeight=(p.cell)+'px'; t.style.borderRadius='6px'; t.style.textAlign='center'; t.style.transition='transform 200ms cubic-bezier(.2,.8,.2,1), background 120ms linear, opacity 220ms linear'; t.style.transform='translate3d('+p.x+'px,'+p.y+'px,0)'; t.style.background=tileColor(value); t.style.fontWeight='800'; t.style.color='#052b4a'; gridEl.appendChild(t); return t; }
+    // ---- Tile colors ----
+    const COLORS = {
+      2:    {bg:'#f0f8ff',color:'#1a3050'},
+      4:    {bg:'#d0e8ff',color:'#1a3050'},
+      8:    {bg:'#88c8ff',color:'#0a2040'},
+      16:   {bg:'#6699ff',color:'#fff'},
+      32:   {bg:'#ffcc66',color:'#5a3000'},
+      64:   {bg:'#ff9944',color:'#fff'},
+      128:  {bg:'#ff7777',color:'#fff'},
+      256:  {bg:'#ff55aa',color:'#fff'},
+      512:  {bg:'#cc44ff',color:'#fff'},
+      1024: {bg:'#7744ff',color:'#fff'},
+      2048: {bg:'#ffd700',color:'#3a2000'},
+    };
 
-  function tileColor(v){ const colors={2:'#f0f8ff',4:'#d0e8ff',8:'#a0d0ff',16:'#88b0ff',32:'#ffdd99',64:'#ffb366',128:'#ffd2a6',256:'#ffc090',512:'#ff9a9a',1024:'#ff7fbf',2048:'#ffd700'}; return colors[v]||'#9bd3ff'; }
-
-  function newTile(value,r,c){ const id='t'+(tileIdCounter++); const el=createTileElement(id,value,r,c); tilesById[id]={id,value,r,c,el,removed:false}; gridIds[r][c]=id; }
-
-  function addRandom(){ const empt=[]; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!gridIds[r][c]) empt.push([r,c]); if(!empt.length) return; const p=empt[Math.floor(Math.random()*empt.length)]; const v=Math.random()<0.9?2:4; newTile(v,p[0],p[1]); }
-
-  function loadBest(){ if(bestEl) bestEl.textContent = parseInt(localStorage.getItem('mini2048-best')||'0',10); }
-  function saveBest(){ const b=Math.max(parseInt(localStorage.getItem('mini2048-best')||'0',10), score); localStorage.setItem('mini2048-best',b); if(bestEl) bestEl.textContent=b; }
-
-  function renderScore(){ if(scoreEl) scoreEl.textContent=score; saveBest(); }
-
-  function slideRowIds(row){ const arr=row.filter(x=>x!==null); for(let i=0;i<arr.length-1;i++){ const a=tilesById[arr[i]]; const b=tilesById[arr[i+1]]; if(a && b && a.value===b.value){ // merge b into a
-        a.value *= 2; score += a.value; a.el.classList.add('tile-merge'); b.el.classList.add('to-remove'); b.removed = true; arr.splice(i+1,1); }
+    function tileStyle(v){
+      const c = COLORS[v] || {bg:'#4488ff',color:'#fff'};
+      return `background:${c.bg};color:${c.color};`;
     }
-    while(arr.length < size) arr.push(null); return arr; }
 
-  function transpose(m){ return m[0].map((_,i)=>m.map(row=>row[i])); }
-  function reverseRows(m){ return m.map(row=>row.slice().reverse()); }
+    // ---- Board helpers ----
+    function emptyBoard(){ return Array(SIZE*SIZE).fill(0); }
 
-  function moveLeft(){ let moved=false; for(let r=0;r<size;r++){ const old = gridIds[r].slice(); const ns = slideRowIds(old.slice()); gridIds[r] = ns.slice(); if(ns.join(',') !== old.join(',')) moved = true; } return moved; }
-  function moveRight(){ for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); const moved = moveLeft(); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); return moved; }
-  function moveUp(){ gridIds = transpose(gridIds); const moved = moveLeft(); gridIds = transpose(gridIds); return moved; }
-  function moveDown(){ gridIds = transpose(gridIds); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); const moved = moveLeft(); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); gridIds = transpose(gridIds); return moved; }
+    function idx(r,c){ return r*SIZE+c; }
 
-  function animateTiles(){ const cell=getCellSize(); // update sizes
-    Object.values(tilesById).forEach(t => { if(t.removed) { t.el.style.opacity='0'; t.el.style.transform += ' scale(.6)'; setTimeout(()=>{ if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); delete tilesById[t.id]; },220); } else { // find position in gridIds
-        for(let r=0;r<size;r++) for(let c=0;c<size;c++){ if(gridIds[r][c]===t.id){ t.r=r; t.c=c; const p=posToXY(r,c); t.el.style.width=p.cell+'px'; t.el.style.height=p.cell+'px'; t.el.style.lineHeight=(p.cell)+'px'; t.el.style.transform='translate3d('+p.x+'px,'+p.y+'px,0)'; t.el.style.background = tileColor(t.value); t.el.textContent = t.value; // pop animation for merged tiles
-            if(t.el.classList.contains('tile-merge')){ t.el.style.transition='transform 220ms cubic-bezier(.2,.9,.3,1)'; t.el.style.transform += ' scale(1.06)'; setTimeout(()=>{ if(t.el) t.el.style.transform = 'translate3d('+p.x+'px,'+p.y+'px,0)'; t.el.classList.remove('tile-merge'); },220); }
-            // remove tile-new class after first appearance
-            setTimeout(()=>{ if(t.el) t.el.classList.remove('tile-new'); },300);
-        } }
-    }); renderScore(); }
+    function empties(b){ const e=[]; b.forEach((v,i)=>{ if(!v) e.push(i); }); return e; }
 
-  function isGameOver(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!gridIds[r][c]) return false; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const id=gridIds[r][c]; const v = tilesById[id] && tilesById[id].value; if(r+1<size){ const id2=gridIds[r+1][c]; if(tilesById[id2] && tilesById[id2].value===v) return false; } if(c+1<size){ const id2=gridIds[r][c+1]; if(tilesById[id2] && tilesById[id2].value===v) return false; } } return true; }
-  function win(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const id=gridIds[r][c]; if(tilesById[id] && tilesById[id].value>=2048) return true; } return false; }
+    function addRandom(b){
+      const e = empties(b);
+      if(!e.length) return b;
+      const pos = e[Math.floor(Math.random()*e.length)];
+      const nb = b.slice();
+      nb[pos] = Math.random()<0.9?2:4;
+      return nb;
+    }
 
-  function step(direction){ let moved=false; if(direction==='left') moved=moveLeft(); if(direction==='right') moved=moveRight(); if(direction==='up') moved=moveUp(); if(direction==='down') moved=moveDown(); if(moved){ addRandom(); animateTiles(); if(win()){ if(msgEl) msgEl.textContent='Bravo — 2048 atteint !'; } else if(isGameOver()){ if(msgEl) msgEl.textContent='Game over.'; } else if(msgEl) msgEl.textContent=''; }
-  }
+    // ---- Slide one row left, returns {row, gain, moved} ----
+    function slideRow(row){
+      let arr = row.filter(v=>v!==0);
+      let gain = 0;
+      for(let i=0;i<arr.length-1;i++){
+        if(arr[i]===arr[i+1]){
+          arr[i]*=2; gain+=arr[i]; arr.splice(i+1,1);
+        }
+      }
+      while(arr.length<SIZE) arr.push(0);
+      const moved = arr.some((v,i)=>v!==row[i]);
+      return {row:arr, gain, moved};
+    }
 
-  // input handlers
-  document.addEventListener('keydown', function(e){ const k=e.key; if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)){ e.preventDefault(); step(k.replace('Arrow','').toLowerCase()); } });
-  (function(){ let sx,sy; const root=document.getElementById('game-win'); if(!root) return; root.addEventListener('touchstart', function(e){ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; }); root.addEventListener('touchend', function(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>30||Math.abs(dy)>30){ if(Math.abs(dx)>Math.abs(dy)) dx>0?step('right'):step('left'); else dy>0?step('down'):step('up'); } sx=sy=null; }); })();
-  
-  // leaderboard (enter pseudo directly)
-  async function getLeaderboard(){
-    // try global API first
-    try{
-      const r = await fetch('/api/leaderboard');
-      if(r.ok){ const j = await r.json(); if(j && j.rows) return j.rows.map(x=>({user:x.user,score:parseInt(x.score,10)||0,date:x.date})); }
-    }catch(e){ /* ignore */ }
-    // fallback local
-    return JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]');
-  }
-  function saveLeaderboard(list){ localStorage.setItem('mini2048-leaderboard', JSON.stringify(list)); renderLeaderboard(); }
-  async function renderLeaderboard(){ const list = (await getLeaderboard()).slice().sort((a,b)=>b.score-a.score).slice(0,10); leaderboardEl.innerHTML=''; if(!list.length) leaderboardEl.textContent='Aucun score'; else { list.forEach((e,i)=>{ const row=document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid rgba(0,0,0,.04)'; row.innerHTML = '<div>'+(i+1)+'. <strong>'+escapeHtml(e.user)+'</strong></div><div>'+e.score+'</div>'; leaderboardEl.appendChild(row); }); } }
-  function escapeHtml(s){ return String(s).replace(/[&<>'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
+    // ---- Move in a direction ----
+    function move(b, dir){
+      let nb = b.slice();
+      let totalGain = 0;
+      let anyMoved  = false;
 
-  submitBtn.addEventListener('click', async function(){ const u = (usernameInput.value||'').trim(); if(!u) return alert('Entrez un pseudo');
-    // try global submit
-    try{
-      const r = await fetch('/api/leaderboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ user:u, score: score }) });
-      if(r.ok){ alert('Score soumis au classement global !'); await renderLeaderboard(); return; }
-    }catch(e){ /* ignore */ }
-    // fallback local
-    const list=JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); list.push({user:u,score:score,date:(new Date()).toISOString()}); saveLeaderboard(list); alert('Score soumis localement (fallback)');
-  });
-  clearBoardBtn.addEventListener('click', function(){ if(!confirm('Effacer le classement local ?')) return; saveLeaderboard([]); // note: global clear requires DB action
-  });
+      // Transform board so we always slide left on rows
+      if(dir==='left'||dir==='right'){
+        for(let r=0;r<SIZE;r++){
+          let row = nb.slice(r*SIZE,(r+1)*SIZE);
+          if(dir==='right') row.reverse();
+          const res = slideRow(row);
+          if(res.moved) anyMoved=true;
+          totalGain += res.gain;
+          const outRow = dir==='right'?res.row.slice().reverse():res.row;
+          for(let c=0;c<SIZE;c++) nb[idx(r,c)]=outRow[c];
+        }
+      } else {
+        // up / down: work on columns
+        for(let c=0;c<SIZE;c++){
+          let col = [];
+          for(let r=0;r<SIZE;r++) col.push(nb[idx(r,c)]);
+          if(dir==='down') col.reverse();
+          const res = slideRow(col);
+          if(res.moved) anyMoved=true;
+          totalGain += res.gain;
+          const outCol = dir==='down'?res.row.slice().reverse():res.row;
+          for(let r=0;r<SIZE;r++) nb[idx(r,c)]=outCol[r];
+        }
+      }
+      return {nb, gain:totalGain, moved:anyMoved};
+    }
 
-  // new game handler
-  document.getElementById('newGame').addEventListener('click', function(){ startNewGame(); });
+    // ---- Game over / win checks ----
+    function hasMove(b){
+      if(empties(b).length) return true;
+      for(let r=0;r<SIZE;r++){
+        for(let c=0;c<SIZE;c++){
+          const v = b[idx(r,c)];
+          if(r+1<SIZE && b[idx(r+1,c)]===v) return true;
+          if(c+1<SIZE && b[idx(r,c+1)]===v) return true;
+        }
+      }
+      return false;
+    }
 
-  function startNewGame(){ gridIds = makeGridIds(); tilesById={}; score=0; tileIdCounter=1; createBackground(); addRandom(); addRandom(); renderScore(); renderLeaderboard(); msgEl.textContent=''; }
+    function hasWon(b){ return b.some(v=>v>=2048); }
 
-  // responsive resizing
-  window.addEventListener('resize', function(){ createBackground(); animateTiles(); });
+    // ---- Render ----
+    function render(b, mergedIdx){
+      // Remove existing tiles (not the background cells)
+      boardEl.querySelectorAll('.g2048-tile').forEach(el=>el.remove());
 
-  // init
-  loadBest(); startNewGame();
+      // Get cell positions from background cells
+      const cells = boardEl.querySelectorAll('.g2048-cell');
 
-})();
+      b.forEach((v,i)=>{
+        if(!v) return;
+        const cellRect = cells[i].getBoundingClientRect();
+        const boardRect = boardEl.getBoundingClientRect();
+
+        const tile = document.createElement('div');
+        tile.className = 'g2048-tile' + (mergedIdx && mergedIdx.has(i) ? ' merged' : '');
+        tile.textContent = v;
+        tile.style.cssText = `
+        position:absolute;
+        left:${cells[i].offsetLeft}px;
+        top:${cells[i].offsetTop}px;
+        width:${cells[i].offsetWidth}px;
+        height:${cells[i].offsetHeight}px;
+        line-height:${cells[i].offsetHeight}px;
+        font-size:${v>=1000?14:v>=100?16:18}px;
+        ${tileStyle(v)}
+      `;
+        boardEl.appendChild(tile);
+      });
+    }
+
+    function updateScore(){
+      scoreEl.textContent = score;
+      if(score>best){ best=score; localStorage.setItem('ak2048best',best); }
+      bestEl.textContent = best;
+    }
+
+    // ---- Game flow ----
+    function newGame(){
+      board = emptyBoard();
+      board = addRandom(board);
+      board = addRandom(board);
+      score = 0;
+      msgEl.textContent = '';
+      updateScore();
+      render(board, null);
+    }
+
+    function applyMove(dir){
+      const {nb, gain, moved} = move(board, dir);
+      if(!moved) return;
+
+      // Track merged indices for animation
+      const mergedSet = new Set();
+      nb.forEach((v,i)=>{ if(v!==board[i] && v!==0) mergedSet.add(i); });
+
+      board = addRandom(nb);
+      score += gain;
+      updateScore();
+      render(board, mergedSet);
+
+      if(hasWon(board) && !msgEl.textContent){
+        msgEl.textContent = '🏆 2048 atteint ! Continuez…';
+      } else if(!hasMove(board)){
+        msgEl.textContent = '💀 Game over !';
+      }
+    }
+
+    // ---- Input ----
+    document.addEventListener('keydown', e=>{
+      if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
+      e.preventDefault();
+      applyMove(e.key.replace('Arrow','').toLowerCase());
+    });
+
+    // Touch swipe
+    let tx=null, ty=null;
+    const gameEl = document.getElementById('game-win');
+    gameEl.addEventListener('touchstart', e=>{ const t=e.touches[0]; tx=t.clientX; ty=t.clientY; }, {passive:true});
+    gameEl.addEventListener('touchend', e=>{
+      if(tx===null) return;
+      const t=e.changedTouches[0];
+      const dx=t.clientX-tx, dy=t.clientY-ty;
+      if(Math.abs(dx)<20 && Math.abs(dy)<20){ tx=ty=null; return; }
+      if(Math.abs(dx)>Math.abs(dy)) applyMove(dx>0?'right':'left');
+      else applyMove(dy>0?'down':'up');
+      tx=ty=null;
+    });
+
+    newBtn.addEventListener('click', newGame);
+
+    // Make board position:relative for absolute tile placement
+    boardEl.style.position = 'relative';
+
+    // ===========================
+    //   LEADERBOARD
+    // ===========================
+    async function fetchLeaderboard(){
+      // 1. Try global API
+      try{
+        const r = await fetch('/api/leaderboard', {cache:'no-store'});
+        if(r.ok){
+          const j = await r.json();
+          const rows = j.rows || j;
+          if(Array.isArray(rows)){
+            setLbStatus('🌍 Classement global');
+            return {rows, global:true};
+          }
+        }
+      }catch(e){ /* réseau indispo */ }
+
+      // 2. Fallback localStorage
+      setLbStatus('💾 Classement local (API indisponible)');
+      const rows = JSON.parse(localStorage.getItem('ak2048lb')||'[]');
+      return {rows, global:false};
+    }
+
+    async function renderLeaderboard(){
+      lbEl.innerHTML = '<div style="color:var(--text2);font-size:12px;padding:6px">Chargement…</div>';
+      const {rows} = await fetchLeaderboard();
+      const sorted = rows.slice().sort((a,b)=>b.score-a.score).slice(0,10);
+      if(!sorted.length){ lbEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px">Aucun score</div>'; return; }
+      lbEl.innerHTML = sorted.map((e,i)=>`
+      <div class="lb-row">
+        <div><span class="lb-rank">${i+1}.</span> <strong class="${i===0?'lb-gold':''}">${esc(e.user)}</strong></div>
+        <div style="font-weight:700">${e.score.toLocaleString('fr-FR')}</div>
+      </div>
+    `).join('');
+    }
+
+    function setLbStatus(msg){ lbStatus.textContent=msg; }
+
+    async function submitScore(){
+      const user = pseudoIn.value.trim();
+      if(!user){ alert('Entrez un pseudo avant de soumettre.'); pseudoIn.focus(); return; }
+      if(score===0){ alert('Votre score est 0 — jouez d\'abord !'); return; }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Envoi…';
+
+      let success = false;
+
+      // 1. Try global API
+      try{
+        const r = await fetch('/api/leaderboard',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({user,score})
+        });
+        if(r.ok){ const j=await r.json(); success=j.success; }
+      }catch(e){}
+
+      // 2. Always also save locally as backup
+      const local = JSON.parse(localStorage.getItem('ak2048lb')||'[]');
+      const existIdx = local.findIndex(e=>e.user===user);
+      if(existIdx>=0){ if(score>local[existIdx].score){ local[existIdx].score=score; local[existIdx].date=new Date().toISOString(); } }
+      else { local.push({user,score,date:new Date().toISOString()}); }
+      local.sort((a,b)=>b.score-a.score); if(local.length>100) local.length=100;
+      localStorage.setItem('ak2048lb',JSON.stringify(local));
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = '📤 Soumettre score';
+
+      if(success){
+        alert('✅ Score soumis au classement global !');
+      } else {
+        alert('✅ Score sauvegardé localement (API non disponible).');
+      }
+      await renderLeaderboard();
+    }
+
+    submitBtn.addEventListener('click', submitScore);
+    refreshBtn.addEventListener('click', renderLeaderboard);
+
+    // ---- Init ----
+    newGame();
+    renderLeaderboard();
+
+  })();
 </script>
 
-<!-- end 2048 script -->
-
-<script>
-  function scroll_to(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  function tick() { var d = new Date(); document.getElementById('clock').textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
-  tick(); setInterval(tick, 10000);
-  var obs = new IntersectionObserver(function(entries) { entries.forEach(function(e,i){ if(e.isIntersecting){ setTimeout(function(){ e.target.classList.add('show'); }, i*60); obs.unobserve(e.target); } }); }, { threshold: 0.08 });
-  document.querySelectorAll('.fadein').forEach(function(el){ obs.observe(el); });
-  document.querySelectorAll('.nav-tab').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); var t = document.querySelector(a.getAttribute('href')); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' }); document.querySelectorAll('.nav-tab').forEach(function(x){ x.classList.remove('active'); }); a.classList.add('active'); }); });
-</script>
 </body>
 </html>
