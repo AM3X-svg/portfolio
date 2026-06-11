@@ -786,7 +786,7 @@
       if(!sorted.length){ lbEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px">Aucun score</div>'; return; }
       lbEl.innerHTML = sorted.map((e,i)=>`
       <div class="lb-row">
-        <div><span class="lb-rank">${i+1}.</span> <strong class="${i===0?'lb-gold':''}">${esc(e.user)}</strong></div>
+        <div><span class="lb-rank">${i+1}.</span> <strong class="${i===0?'lb-gold':''}">${esc(e.user||e.username||'—')}</strong></div>
         <div style="font-weight:700">${e.score.toLocaleString('fr-FR')}</div>
       </div>
     `).join('');
