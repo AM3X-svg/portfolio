@@ -127,5 +127,5 @@ main { padding: 80px 16px 60px; max-width: 1200px; margin: 0 auto; display: flex
 /* (rest omitted for brevity) */
 
 /* Prevent mobile page scroll while interacting with the embedded game */
-#game-win { touch-action: none; -ms-touch-action: none; }
-#game-win * { touch-action: none; -ms-touch-action: none; }
+#g2048-board { touch-action: none; -ms-touch-action: none; }
+#g2048-board * { touch-action: none; -ms-touch-action: none; }

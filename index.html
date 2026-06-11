@@ -737,18 +737,19 @@
       applyMove(e.key.replace('Arrow','').toLowerCase());
     });
 
-    // Touch swipe — prevent page scroll while interacting with the game on mobile
+    // Touch swipe — prevent page scroll only when interacting with the board element
     let tx=null, ty=null;
-    const gameEl = document.getElementById('game-win');
+    // boardEl is the actual tile container (id="g2048-board")
+    // attach touch handlers to the board only so page scrolling outside remains normal
     // touchstart must be non-passive so we can prevent default on touchmove
-    gameEl.addEventListener('touchstart', e=>{
+    boardEl.addEventListener('touchstart', e=>{
       const t=e.touches[0]; tx=t.clientX; ty=t.clientY;
     }, {passive:false});
-    // prevent page from scrolling when moving finger within the game
-    gameEl.addEventListener('touchmove', e=>{
-      if(tx===null) return; e.preventDefault(); // stops page scroll while interacting
+    // prevent page from scrolling when moving finger within the board
+    boardEl.addEventListener('touchmove', e=>{
+      if(tx===null) return; e.preventDefault(); // stops page scroll while interacting with the board
     }, {passive:false});
-    gameEl.addEventListener('touchend', e=>{
+    boardEl.addEventListener('touchend', e=>{
       if(tx===null) return;
       const t=e.changedTouches[0];
       const dx=t.clientX-tx, dy=t.clientY-ty;
