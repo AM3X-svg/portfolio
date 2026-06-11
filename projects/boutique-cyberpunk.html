@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Boutique Cyberpunk — Alexandre KLOTZ</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css">
   <style>
     /* Copied minimal theme from index.html to keep consistent look */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,9 +75,7 @@
       <div id="gallery" class="gallery">
         <div id="drop" class="gallery-drop">Déposer des images ici ou utiliser le bouton "Ajouter des images" — aperçu local (les images ne sont pas copiées sur le site serveur).</div>
         <div class="thumbs" id="thumbs"></div>
-        <div style="margin-top:10px;"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"/></div>
-        <div style="margin-top:8px"><button class="xp-btn" id="pick">🖼️ Ajouter des images</button>
-        <button class="xp-btn" id="clear" style="background:#ffdede;border-color:#ff9a9a">🗑️ Effacer aperçu</button></div>
+        <div style="margin-top:10px;"></div>
         <p style="margin-top:10px;color:var(--text2);font-size:12px">Conseil: pour que les images soient servies par le site, placez-les dans projects/images/boutique-cyberpunk/ et référez-les ensuite dans ce fichier HTML.</p>
       </div>
 
@@ -94,23 +93,18 @@
   </div>
 
   <script>
-    // simple client-side gallery preview (does not upload)
-    (function(){
-      var drop = document.getElementById('drop');
-      var thumbs = document.getElementById('thumbs');
-      var input = document.getElementById('fileinput');
-      var pick = document.getElementById('pick');
-      var clear = document.getElementById('clear');
-      function showFiles(files){
-        for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image/')) return; var r=new FileReader(); r.onload=function(e){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=e.target.result; d.appendChild(img); thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }
-      }
-      pick.addEventListener('click', function(){ input.click(); });
-      input.addEventListener('change', function(e){ showFiles(e.target.files); });
-      drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.style.opacity=0.85; });
-      drop.addEventListener('dragleave', function(e){ drop.style.opacity=''; });
-      drop.addEventListener('drop', function(e){ e.preventDefault(); drop.style.opacity=''; showFiles(e.dataTransfer.files); });
-      clear.addEventListener('click', function(){ thumbs.innerHTML=''; input.value=''; });
-    })();
+  (function(){
+    var drop = document.getElementById('gallery') || document.getElementById('drop') || document.querySelector('.gallery');
+    var thumbs = document.getElementById('thumbs');
+    function showFiles(files){
+      for(var i=0;i<files.length;i++){ (function(f){ if(!f.type || !f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(e){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=e.target.result; d.appendChild(img); if(thumbs) thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }
+    }
+    if(drop){
+      drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.style.opacity=0.9; });
+      drop.addEventListener('dragleave', function(){ if(drop.style) drop.style.opacity=''; });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); if(e.dataTransfer && e.dataTransfer.files) showFiles(e.dataTransfer.files); });
+    }
+  })();
   </script>
 </body>
 </html>

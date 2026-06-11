@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pokédex Interactif — Alexandre KLOTZ</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css">
   <style>
     /* Minimal theme copy to match index */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +37,7 @@
         <h4>Live preview / images</h4>
         <div class="gallery" id="gallery">Glisser-déposer des captures d'écran ou utiliser le bouton ci-dessous pour prévisualiser localement.</div>
         <div class="thumbs" id="thumbs"></div>
-        <div style="margin-top:10px;"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"/><button class="xp-btn" id="pick">🖼️ Ajouter des images</button> <button class="xp-btn" id="clear" style="background:#ffdede;border-color:#ff9a9a">Effacer</button></div>
+        <div style="margin-top:10px;"></div>
         <p style="margin-top:8px;color:var(--text2)">Pour rendre les images permanentes sur le site, déposez-les dans projects/images/pokedex-interactive/ et référencez-les dans ce fichier HTML.</p>
       </div>
 
@@ -49,20 +50,24 @@
         <li>Mini-démo d'appel API avec retour d'erreurs lisible</li>
       </ul>
 
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a class="xp-btn" href="https://github.com/AM3X-svg/choubigroupgroupietracker" target="_blank">📂 Code</a></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a class="xp-btn" href="https://github.com/AM3X-svg/choubigroupgroupietracker" target="_blank" rel="noopener">📂 Code</a></div>
       <footer>Astuce: créez projects/images/pokedex-interactive/ pour ajouter des images servies par le site.</footer>
     </div>
   </div>
 
   <script>
-    // basic preview script shared across pages
-    (function(){
-      var pick=document.getElementById('pick'), fi=document.getElementById('fileinput'), thumbs=document.getElementById('thumbs'), drop=document.getElementById('gallery');
-      pick.addEventListener('click',function(){fi.click()}); fi.addEventListener('change', function(e){ show(e.target.files) });
-      function show(files){ for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=ev.target.result; d.appendChild(img); thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }}
-      drop.addEventListener('dragover',function(e){ e.preventDefault(); drop.style.opacity=0.9; }); drop.addEventListener('dragleave',function(){ drop.style.opacity=''; }); drop.addEventListener('drop',function(e){ e.preventDefault(); drop.style.opacity=''; show(e.dataTransfer.files); });
-      document.getElementById('clear').addEventListener('click', function(){ thumbs.innerHTML=''; fi.value=''; });
-    })();
+  (function(){
+    var drop = document.getElementById('gallery') || document.getElementById('drop') || document.querySelector('.gallery');
+    var thumbs = document.getElementById('thumbs');
+    function showFiles(files){
+      for(var i=0;i<files.length;i++){ (function(f){ if(!f.type || !f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(e){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=e.target.result; d.appendChild(img); if(thumbs) thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }
+    }
+    if(drop){
+      drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.style.opacity=0.9; });
+      drop.addEventListener('dragleave', function(){ if(drop.style) drop.style.opacity=''; });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); if(e.dataTransfer && e.dataTransfer.files) showFiles(e.dataTransfer.files); });
+    }
+  })();
   </script>
 </body>
 </html>

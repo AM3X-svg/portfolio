@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Forum Musical — Alexandre KLOTZ</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css">
   <style>
     /* small theme copy */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -32,7 +33,7 @@
       <h4>Galerie</h4>
       <div style="border:1px dashed rgba(0,80,160,.12);padding:10px;border-radius:8px">Glisser-déposer des fichiers ou utiliser le bouton pour prévisualiser les images locales.</div>
       <div class="thumbs" id="thumbs"></div>
-      <div style="margin-top:10px"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"><button onclick="document.getElementById('fileinput').click()" class="xp-btn">🖼️ Ajouter</button> <button onclick="document.getElementById('thumbs').innerHTML='';" class="xp-btn" style="background:#ffdede">Effacer</button></div>
+      <div style="margin-top:10px"></div>
 
       <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,.06)">
       <h4>Fonctionnalités</h4>
@@ -42,14 +43,18 @@
         <li>Panel admin pour suppression et bannissement</li>
       </ul>
 
-      <div style="margin-top:12px"><a class="xp-btn" href="https://github.com/Omrane02/livrablesforumteamXXL" target="_blank">📂 Code</a></div>
+      <div style="margin-top:12px"><a class="xp-btn" href="https://github.com/Omrane02/livrablesforumteamXXL" target="_blank" rel="noopener">📂 Code</a></div>
       <p style="margin-top:12px;color:var(--text2)">Pour héberger les images avec le site, placez-les dans projects/images/forum-musical/ et modifiez ce fichier pour référencer les fichiers.</p>
     </div>
   </div>
 
   <script>
-    document.getElementById('fileinput').addEventListener('change', function(e){ var files=e.target.files; for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=ev.target.result; img.style.maxWidth='100%'; d.appendChild(img); document.getElementById('thumbs').appendChild(d); }; r.readAsDataURL(f); })(files[i]); } });
-    (function(){ var drop=document.querySelector('.win-body'); drop.addEventListener('dragover',function(e){ e.preventDefault(); }); drop.addEventListener('drop',function(e){ e.preventDefault(); var dt=e.dataTransfer; var files=dt.files; var input=document.getElementById('fileinput'); var ev={target:{files:files}}; document.getElementById('fileinput').dispatchEvent(new Event('change')); }); })();
+  (function(){
+    var drop = document.querySelector('.win-body') || document.querySelector('.gallery');
+    var thumbs = document.getElementById('thumbs');
+    function showFiles(files){ for(var i=0;i<files.length;i++){ (function(f){ if(!f.type || !f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=ev.target.result; img.style.maxWidth='100%'; d.appendChild(img); if(thumbs) thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }}
+    if(drop){ drop.addEventListener('dragover',function(e){ e.preventDefault(); }); drop.addEventListener('drop',function(e){ e.preventDefault(); if(e.dataTransfer && e.dataTransfer.files) showFiles(e.dataTransfer.files); }); }
+  })();
   </script>
 </body>
 </html>

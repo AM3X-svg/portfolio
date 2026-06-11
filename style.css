@@ -1,0 +1,127 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --sky1: #c8e8ff; --sky2: #e8f6ff; --sky3: #a0d4f5;
+  --glass: rgba(255,255,255,0.45); --glass2: rgba(255,255,255,0.25);
+  --glass-border: rgba(255,255,255,0.8);
+  --accent: #0078d4; --accent2: #00b4ff;
+  --green: #3cb371; --text: #1a2a3a; --text2: #4a6080;
+  --xp-title: linear-gradient(180deg,#5897ea 0%,#3a6bc4 100%);
+  --xp-btn: linear-gradient(180deg,#f0f8ff 0%,#c8e0f8 50%,#a8ccf0 51%,#d0e8fc 100%);
+  --xp-btn-border: #6699cc;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Tahoma', 'Segoe UI', sans-serif;
+  font-size: 13px; color: var(--text);
+  min-height: 100vh; overflow-x: hidden;
+  background:
+          radial-gradient(ellipse 80% 50% at 50% -10%, #b3dff5 0%, transparent 70%),
+          radial-gradient(ellipse 60% 40% at 80% 60%, #c8f0d8 0%, transparent 60%),
+          radial-gradient(ellipse 50% 50% at 20% 80%, #dcd0ff 0%, transparent 60%),
+          linear-gradient(180deg, #e8f6ff 0%, #f0faff 40%, #e0f4ea 70%, #dce8ff 100%);
+  background-attachment: fixed;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background-image: url("IMG_0764.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+
+  filter: blur(5px);
+  transform: scale(1.05); /* évite les bords visibles après le blur */
+}
+/* TASKBAR */
+#taskbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  height: 36px;
+  background: linear-gradient(180deg, #245edc 0%, #1941b8 40%, #1538a8 60%, #2255d0 100%);
+  border-top: 1px solid #5080d8;
+  display: flex; align-items: center; gap: 4px; padding: 0 4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
+}
+.start-btn {
+  background: linear-gradient(180deg, #5fbd42 0%, #3a9e1a 40%, #2e8e12 60%, #4ab832 100%);
+  border: 1px solid #1e6e08; border-radius: 12px;
+  padding: 2px 14px 2px 10px; color: #fff;
+  font-family: 'Tahoma', sans-serif; font-weight: 700; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 3px rgba(0,0,0,.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+.taskbar-btn {
+  height: 26px; padding: 0 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 50%, rgba(0,0,0,.1) 100%);
+  border: 1px solid rgba(255,255,255,.3); border-radius: 3px;
+  color: #fff; font-size: 11px; font-family: 'Tahoma', sans-serif; cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap;
+}
+.taskbar-btn:hover { background: linear-gradient(180deg, rgba(255,255,255,.4) 0%, rgba(255,255,255,.2) 100%); }
+.taskbar-clock {
+  margin-left: auto;
+  background: linear-gradient(180deg, rgba(0,0,40,.3) 0%, rgba(0,0,80,.2) 100%);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 3px;
+  padding: 0 8px; height: 26px; display: flex; align-items: center;
+  color: #fff; font-size: 11px; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+/* XP WINDOW */
+.win {
+  position: relative; background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-radius: 8px 8px 6px 6px; border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0,80,160,.18), inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,80,.08);
+  overflow: hidden;
+}
+.win-title {
+  display: flex; align-items: center; gap: 6px; padding: 4px 6px;
+  background: var(--xp-title); color: #fff;
+  font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,.5); user-select: none;
+}
+.win-controls { margin-left: auto; display: flex; gap: 2px; }
+.win-btn {
+  width: 22px; height: 18px; border-radius: 3px; border: none; cursor: pointer;
+  font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.win-btn-min { background: linear-gradient(180deg,#f5d76e,#e8a800); color:#5a3a00; }
+.win-btn-max { background: linear-gradient(180deg,#a8e060,#62b800); color:#1a4000; }
+.win-btn-cls { background: linear-gradient(180deg,#ff7070,#e00000); color:#fff; }
+.win-body { padding: 16px; }
+/* NAV */
+#nav-win { position: fixed; top: 12px; left: 0; right: 0; z-index: 100; margin: 0 auto; max-width: 860px; width: calc(100% - 32px); }
+.nav-tabs {
+  display: flex; gap: 3px; padding: 0 8px;
+  background: linear-gradient(180deg, rgba(200,220,255,.5) 0%, rgba(160,200,240,.3) 100%);
+  border-bottom: 1px solid rgba(255,255,255,.6);
+}
+.nav-tab {
+  padding: 6px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(220,240,255,.5) 100%);
+  border: 1px solid rgba(255,255,255,.7); border-bottom: none; border-radius: 5px 5px 0 0;
+  font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; text-decoration: none; transition: background .15s;
+}
+.nav-tab:hover, .nav-tab.active { background: linear-gradient(180deg, #fff 0%, rgba(220,240,255,.9) 100%); }
+/* LAYOUT */
+main { padding: 80px 16px 60px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+/* HERO */
+#hero-win .win-body { display: flex; gap: 20px; align-items: flex-start; }
+.hero-avatar {
+  flex-shrink: 0; width: 90px; height: 90px; border-radius: 50%;
+  background: linear-gradient(135deg, #b8e0ff, #d0f0c0, #e8d8ff);
+  border: 3px solid rgba(255,255,255,.9); box-shadow: 0 2px 12px rgba(0,80,160,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: #2255aa; font-family: 'Orbitron', monospace;
+}
+.hero-text { flex: 1; }
+.hero-name {
+  font-family: 'Orbitron', monospace; font-size: 26px; font-weight: 700;
+  background: linear-gradient(135deg, #0055aa, #0099dd, #00ccaa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1.1; margin-bottom: 4px;
+}
+/* (rest omitted for brevity) */

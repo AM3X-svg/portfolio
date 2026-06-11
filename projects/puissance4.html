@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Puissance 4 — Alexandre KLOTZ</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css">
   <style>
     /* theme snippet */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -30,7 +31,7 @@
 
       <h4>Galerie & démos</h4>
       <div style="border:1px dashed rgba(0,80,160,.12);padding:10px;border-radius:8px">Prévisualiser captures d'écran ici (glisser-déposer ou bouton).</div>
-      <div style="margin-top:10px"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"><button onclick="document.getElementById('fileinput').click()" class="xp-btn">🖼️ Ajouter</button> <button onclick="document.getElementById('thumbs').innerHTML='';" class="xp-btn" style="background:#ffdede">Effacer</button></div>
+      <div style="margin-top:10px"></div>
       <div id="thumbs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:12px"></div>
 
       <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,.06)">
@@ -41,13 +42,18 @@
         <li>Détection victoire et animation</li>
       </ul>
 
-      <div style="margin-top:12px"><a class="xp-btn" href="https://github.com/nikita-ynov/PUISSANCE4" target="_blank">📂 Code</a></div>
+      <div style="margin-top:12px"><a class="xp-btn" href="https://github.com/nikita-ynov/PUISSANCE4" target="_blank" rel="noopener">📂 Code</a></div>
       <p style="margin-top:12px;color:var(--text2)">Pour rendre les images permanentes, déposez-les dans projects/images/puissance4/ et ajoutez les références ici.</p>
     </div>
   </div>
 
   <script>
-    document.getElementById('fileinput').addEventListener('change', function(e){ var files=e.target.files; for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.style.background='#fff'; d.style.border='1px solid rgba(0,0,0,.06)'; d.style.borderRadius='6px'; d.style.padding='6px'; var img=document.createElement('img'); img.src=ev.target.result; img.style.maxWidth='100%'; d.appendChild(img); document.getElementById('thumbs').appendChild(d); }; r.readAsDataURL(f); })(files[i]); } });
+  (function(){
+    var drop = document.querySelector('.win-body') || document.querySelector('.gallery');
+    var thumbs = document.getElementById('thumbs');
+    function showFiles(files){ for(var i=0;i<files.length;i++){ (function(f){ if(!f.type || !f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.style.background='#fff'; d.style.border='1px solid rgba(0,0,0,.06)'; d.style.borderRadius='6px'; d.style.padding='6px'; var img=document.createElement('img'); img.src=ev.target.result; img.style.maxWidth='100%'; d.appendChild(img); if(thumbs) thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }}
+    if(drop){ drop.addEventListener('dragover',function(e){ e.preventDefault(); }); drop.addEventListener('drop',function(e){ e.preventDefault(); if(e.dataTransfer && e.dataTransfer.files) showFiles(e.dataTransfer.files); }); }
+  })();
   </script>
 </body>
 </html>
