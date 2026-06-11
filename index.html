@@ -552,15 +552,32 @@
   function currentUser(){ return localStorage.getItem('mini2048-user') || null; }
   function setUser(u){ if(u) localStorage.setItem('mini2048-user',u); else localStorage.removeItem('mini2048-user'); renderUser(); }
   function renderUser(){ const u=currentUser(); currentUserEl.textContent = u || '—'; usernameInput.value = u || ''; }
-  function getLeaderboard(){ return JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); }
+  async function getLeaderboard(){
+    // try global API first
+    try{
+      const r = await fetch('/api/leaderboard');
+      if(r.ok){ const j = await r.json(); if(j && j.rows) return j.rows.map(x=>({user:x.user,score:parseInt(x.score,10)||0,date:x.date})); }
+    }catch(e){ /* ignore */ }
+    // fallback local
+    return JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]');
+  }
   function saveLeaderboard(list){ localStorage.setItem('mini2048-leaderboard', JSON.stringify(list)); renderLeaderboard(); }
-  function renderLeaderboard(){ const list=getLeaderboard().slice().sort((a,b)=>b.score-a.score).slice(0,10); leaderboardEl.innerHTML=''; if(!list.length) leaderboardEl.textContent='Aucun score'; else { list.forEach((e,i)=>{ const row=document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid rgba(0,0,0,.04)'; row.innerHTML = '<div>'+(i+1)+'. <strong>'+escapeHtml(e.user)+'</strong></div><div>'+e.score+'</div>'; leaderboardEl.appendChild(row); }); } }
+  async function renderLeaderboard(){ const list = (await getLeaderboard()).slice().sort((a,b)=>b.score-a.score).slice(0,10); leaderboardEl.innerHTML=''; if(!list.length) leaderboardEl.textContent='Aucun score'; else { list.forEach((e,i)=>{ const row=document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid rgba(0,0,0,.04)'; row.innerHTML = '<div>'+(i+1)+'. <strong>'+escapeHtml(e.user)+'</strong></div><div>'+e.score+'</div>'; leaderboardEl.appendChild(row); }); } }
   function escapeHtml(s){ return String(s).replace(/[&<>'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
 
   loginBtn.addEventListener('click', function(){ var u=usernameInput.value.trim(); if(!u) return alert('Entrez un pseudo'); setUser(u); });
   logoutBtn.addEventListener('click', function(){ setUser(null); });
-  submitBtn.addEventListener('click', function(){ const u=currentUser(); if(!u) return alert('Connectez-vous pour soumettre'); const list=getLeaderboard(); list.push({user:u,score:score,date:(new Date()).toISOString()}); saveLeaderboard(list); alert('Score soumis !'); });
-  clearBoardBtn.addEventListener('click', function(){ if(!confirm('Effacer le classement local ?')) return; saveLeaderboard([]); });
+  submitBtn.addEventListener('click', async function(){ const u=currentUser(); if(!u) return alert('Connectez-vous pour soumettre');
+    // try global submit
+    try{
+      const r = await fetch('/api/leaderboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ user:u, score: score }) });
+      if(r.ok){ alert('Score soumis au classement global !'); await renderLeaderboard(); return; }
+    }catch(e){ /* ignore */ }
+    // fallback local
+    const list=JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); list.push({user:u,score:score,date:(new Date()).toISOString()}); saveLeaderboard(list); alert('Score soumis localement (fallback)');
+  });
+  clearBoardBtn.addEventListener('click', function(){ if(!confirm('Effacer le classement local ?')) return; saveLeaderboard([]); // note: global clear requires DB action
+  });
 
   // new game handler
   document.getElementById('newGame').addEventListener('click', function(){ startNewGame(); });
