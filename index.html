@@ -232,6 +232,16 @@
     /* FADE IN */
     .fadein { opacity:0; transform:translateY(18px); transition: opacity .5s ease, transform .5s ease; }
     .fadein.show { opacity:1; transform:none; }
+
+    /* 2048 tiles - micro animations */
+    #grid { position: relative; }
+    #grid > div { transition: transform 180ms ease, background 120ms ease, opacity 180ms ease; will-change: transform, opacity; display:flex; align-items:center; justify-content:center; border-radius:6px; font-weight:700; font-size:20px; }
+    .tile-new { animation: slideIn 180ms ease both; }
+    .tile-pop { animation: pop 220ms ease both; }
+    .tile-merge { animation: pop 260ms cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes slideIn { from { transform: translateY(12px); opacity:0 } to { transform: none; opacity:1 } }
+    @keyframes pop { 0% { transform: scale(.5); opacity:0 } 50% { transform: scale(1.06); opacity:1 } 100% { transform: scale(1); opacity:1 } }
+
     /* SCROLLBAR */
     ::-webkit-scrollbar { width: 14px; }
     ::-webkit-scrollbar-track { background: linear-gradient(90deg, #c8dcf0, #d8ecff); border: 1px solid #b0ccee; }
@@ -454,7 +464,7 @@
 <!-- 2048 game script -->
 <script>
 (function(){
-  const size=4; let grid, score=0;
+  const size=4; let grid, score=0, prevGrid=null;
   const gridEl=document.getElementById('grid');
   const scoreEl=document.getElementById('score');
   const bestEl=document.getElementById('best');
@@ -465,12 +475,20 @@
     if(!empt.length) return null; return empt[Math.floor(Math.random()*empt.length)];
   }
   function addRandom(){ const p=randPos(); if(!p) return; grid[p[0]][p[1]] = Math.random()<0.9?2:4; }
-  function init(){ grid=emptyGrid(); score=0; loadBest(); addRandom(); addRandom(); render(); }
-  function saveBest(){ const b=Math.max(getBest(),score); localStorage.setItem('mini2048-best',b); bestEl.textContent=b; }
+  function init(){ prevGrid = emptyGrid(); grid=emptyGrid(); score=0; loadBest(); addRandom(); addRandom(); render(); }
+  function saveBest(){ const b=Math.max(getBest(),score); localStorage.setItem('mini2048-best',b); if(bestEl) bestEl.textContent=b; }
   function getBest(){ return parseInt(localStorage.getItem('mini2048-best')||'0',10); }
-  function loadBest(){ bestEl.textContent=getBest(); }
-  function render(){ if(!gridEl) return; gridEl.innerHTML=''; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; const cell=document.createElement('div'); cell.style.display='flex'; cell.style.alignItems='center'; cell.style.justifyContent='center'; cell.style.borderRadius='6px'; cell.style.fontWeight='700'; cell.style.fontSize='20px'; cell.style.background=v?tileColor(v):'rgba(255,255,255,0.6)'; cell.style.boxShadow=v?'inset 0 1px 0 rgba(255,255,255,.35)':'none'; cell.textContent=v||''; gridEl.appendChild(cell); }
-    if(scoreEl) scoreEl.textContent=score; saveBest(); }
+  function loadBest(){ if(bestEl) bestEl.textContent=getBest(); }
+  function render(){ if(!gridEl) return; gridEl.innerHTML=''; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; const cell=document.createElement('div'); cell.textContent=v||''; cell.style.background=v?tileColor(v):'rgba(255,255,255,0.6)'; cell.style.boxShadow=v?'inset 0 1px 0 rgba(255,255,255,.35)':'none'; // animation classes
+      const prev = prevGrid ? prevGrid[r][c] : 0;
+      if(v){ if(prev===0){ cell.classList.add('tile-new'); cell.style.animationDelay = ((r*size+c)*28)+'ms'; }
+               else if(v!==prev){ cell.classList.add('tile-pop'); cell.style.animationDelay = ((r*size+c)*18)+'ms'; }
+      }
+      gridEl.appendChild(cell);
+    }
+    if(scoreEl) scoreEl.textContent=score; saveBest(); // store state for next render
+    prevGrid = grid.map(function(row){ return row.slice(); });
+  }
   function tileColor(v){ const colors={2:'#f0f8ff',4:'#d0e8ff',8:'#a0d0ff',16:'#88b0ff',32:'#ffdd99',64:'#ffb366',128:'#ffd2a6',256:'#ffc090',512:'#ff9a9a',1024:'#ff7fbf',2048:'#ffd700'}; return colors[v]||'#9bd3ff'; }
   function transpose(m){ return m[0].map((_,i)=>m.map(row=>row[i])); }
   function reverseRows(m){ return m.map(row=>row.slice().reverse()); }
