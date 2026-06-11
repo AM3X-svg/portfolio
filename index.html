@@ -259,7 +259,8 @@
       60%  { transform: scale(1.12); }
       100% { transform: scale(1); opacity: 1; }
     }
-    #lb-list { background: rgba(255,255,255,.6); padding: 8px; border-radius: 8px; max-height: 260px; overflow: auto; min-width: 190px; }
+    /* Make leaderboard flow naturally so page scroll works on mobile; avoid inner scrollbars */
+    #lb-list { background: rgba(255,255,255,.6); padding: 8px; border-radius: 8px; overflow: visible; max-height: none; min-width: 0; }
     #lb-list .lb-row { display: flex; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid rgba(0,0,0,.05); font-size: 12px; }
     #lb-list .lb-row:last-child { border-bottom: none; }
     #lb-list .lb-rank { color: var(--text2); margin-right: 4px; }
