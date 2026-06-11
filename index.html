@@ -453,10 +453,8 @@
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
         <div style="display:flex;gap:8px;align-items:center">
           <input id="username" placeholder="Pseudo" style="padding:6px;border-radius:6px;border:1px solid rgba(0,0,0,.08)" />
-          <button id="loginBtn" class="xp-btn">Se connecter</button>
-          <button id="logoutBtn" class="xp-btn" style="background:#ffdede;border-color:#ff9a9a">Se déconnecter</button>
         </div>
-        <div style="font-weight:700;color:var(--text2)">Connecté: <span id="currentUser">—</span></div>
+        <div style="font-weight:700;color:var(--text2)">Entrez votre pseudo pour soumettre un score</div>
       </div>
 
       <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
@@ -547,11 +545,8 @@
   // input handlers
   document.addEventListener('keydown', function(e){ const k=e.key; if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)){ e.preventDefault(); step(k.replace('Arrow','').toLowerCase()); } });
   (function(){ let sx,sy; const root=document.getElementById('game-win'); if(!root) return; root.addEventListener('touchstart', function(e){ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; }); root.addEventListener('touchend', function(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>30||Math.abs(dy)>30){ if(Math.abs(dx)>Math.abs(dy)) dx>0?step('right'):step('left'); else dy>0?step('down'):step('up'); } sx=sy=null; }); })();
-
-  // leaderboard and login (local only)
-  function currentUser(){ return localStorage.getItem('mini2048-user') || null; }
-  function setUser(u){ if(u) localStorage.setItem('mini2048-user',u); else localStorage.removeItem('mini2048-user'); renderUser(); }
-  function renderUser(){ const u=currentUser(); currentUserEl.textContent = u || '—'; usernameInput.value = u || ''; }
+  
+  // leaderboard (enter pseudo directly)
   async function getLeaderboard(){
     // try global API first
     try{
@@ -565,9 +560,7 @@
   async function renderLeaderboard(){ const list = (await getLeaderboard()).slice().sort((a,b)=>b.score-a.score).slice(0,10); leaderboardEl.innerHTML=''; if(!list.length) leaderboardEl.textContent='Aucun score'; else { list.forEach((e,i)=>{ const row=document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid rgba(0,0,0,.04)'; row.innerHTML = '<div>'+(i+1)+'. <strong>'+escapeHtml(e.user)+'</strong></div><div>'+e.score+'</div>'; leaderboardEl.appendChild(row); }); } }
   function escapeHtml(s){ return String(s).replace(/[&<>'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
 
-  loginBtn.addEventListener('click', function(){ var u=usernameInput.value.trim(); if(!u) return alert('Entrez un pseudo'); setUser(u); });
-  logoutBtn.addEventListener('click', function(){ setUser(null); });
-  submitBtn.addEventListener('click', async function(){ const u=currentUser(); if(!u) return alert('Connectez-vous pour soumettre');
+  submitBtn.addEventListener('click', async function(){ const u = (usernameInput.value||'').trim(); if(!u) return alert('Entrez un pseudo');
     // try global submit
     try{
       const r = await fetch('/api/leaderboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ user:u, score: score }) });
@@ -588,7 +581,7 @@
   window.addEventListener('resize', function(){ createBackground(); animateTiles(); });
 
   // init
-  loadBest(); renderUser(); startNewGame();
+  loadBest(); startNewGame();
 
 })();
 </script>
