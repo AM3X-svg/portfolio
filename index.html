@@ -440,20 +440,38 @@
     <div class="status-bar">🔒 alexandre.klotz &middot; Formation cybersécurité</div>
   </div>
 
-  <!-- MINI-JEU 2048 -->
+  <!-- MINI-JEU 2048 (amélioré) -->
   <div id="game-win" class="win fadein">
     <div class="win-title">🎮 Mini-jeu — 2048</div>
     <div class="win-body">
-      <p style="color:var(--text2);font-size:13px;margin-bottom:8px">Combinez les tuiles pour atteindre 2048. Utilisez les flèches ou swipe (mobile).</p>
-      <div id="game" style="display:flex;flex-direction:column;gap:10px;align-items:center">
-        <div id="scoreRow" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <button id="newGame" class="xp-btn">Nouvelle partie</button>
-          <div style="font-weight:700;color:var(--text2)">Score: <span id="score">0</span></div>
-          <div style="font-weight:700;color:var(--text2)">Meilleur: <span id="best">0</span></div>
-        </div>
-        <div id="grid" style="width:320px;height:320px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:10px;border-radius:8px;background:rgba(0,0,0,0.04);padding:10px"></div>
-        <p id="gameMsg" style="color:var(--text2);font-size:13px;margin-top:6px"></p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <button id="newGame" class="xp-btn">Nouvelle partie</button>
+        <div style="font-weight:700;color:var(--text2)">Score: <span id="score">0</span></div>
+        <div style="font-weight:700;color:var(--text2)">Meilleur: <span id="best">0</span></div>
       </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="username" placeholder="Pseudo" style="padding:6px;border-radius:6px;border:1px solid rgba(0,0,0,.08)" />
+          <button id="loginBtn" class="xp-btn">Se connecter</button>
+          <button id="logoutBtn" class="xp-btn" style="background:#ffdede;border-color:#ff9a9a">Se déconnecter</button>
+        </div>
+        <div style="font-weight:700;color:var(--text2)">Connecté: <span id="currentUser">—</span></div>
+      </div>
+
+      <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+        <div>
+          <div id="grid" style="width:360px;height:360px;position:relative;border-radius:8px;background:rgba(0,0,0,0.04);padding:10px;box-sizing:border-box"></div>
+        </div>
+        <div style="min-width:200px">
+          <div style="font-weight:800;margin-bottom:6px">Classement</div>
+          <div id="leaderboard" style="background:rgba(255,255,255,.6);padding:8px;border-radius:8px;max-height:260px;overflow:auto;min-width:200px"></div>
+          <div style="margin-top:8px;display:flex;gap:8px"><button id="submitScore" class="xp-btn">Soumettre score</button><button id="clearBoard" class="xp-btn" style="background:#ffdede">Effacer classement</button></div>
+          <p style="color:var(--text2);margin-top:8px;font-size:12px">Le classement est stocké localement (localStorage). Se connecter avec un pseudo pour soumettre votre score.</p>
+        </div>
+      </div>
+
+      <p id="gameMsg" style="color:var(--text2);font-size:13px;margin-top:8px"></p>
     </div>
   </div>
 
@@ -461,52 +479,100 @@
 
 <footer>© 2025 Alexandre KLOTZ &middot; HTML / CSS / JS vanilla &middot; Déployé sur Vercel</footer>
 
-<!-- 2048 game script -->
+<!-- 2048 game script (animations + leaderboard + login) -->
 <script>
 (function(){
-  const size=4; let grid, score=0, prevGrid=null;
+  const size=4, gap=10, pad=10; let tileIdCounter=1;
+  let gridIds, tilesById={}, score=0;
   const gridEl=document.getElementById('grid');
   const scoreEl=document.getElementById('score');
   const bestEl=document.getElementById('best');
   const msgEl=document.getElementById('gameMsg');
-  function emptyGrid(){ return Array.from({length:size},()=>Array(size).fill(0)); }
-  function randPos(){
-    const empt=[]; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(grid[r][c]===0) empt.push([r,c]);
-    if(!empt.length) return null; return empt[Math.floor(Math.random()*empt.length)];
+  const usernameInput=document.getElementById('username');
+  const loginBtn=document.getElementById('loginBtn');
+  const logoutBtn=document.getElementById('logoutBtn');
+  const currentUserEl=document.getElementById('currentUser');
+  const leaderboardEl=document.getElementById('leaderboard');
+  const submitBtn=document.getElementById('submitScore');
+  const clearBoardBtn=document.getElementById('clearBoard');
+
+  function makeGridIds(){ return Array.from({length:size},()=>Array(size).fill(null)); }
+  function getCellSize(){ const w=gridEl.clientWidth; return Math.floor((w - pad*2 - gap*(size-1))/size); }
+  function posToXY(r,c){ const cell=getCellSize(); const x = pad + c*(cell+gap); const y = pad + r*(cell+gap); return {x,y,cell}; }
+
+  function createBackground(){ gridEl.innerHTML=''; gridEl.style.position='relative'; const cell=getCellSize(); for(let r=0;r<size;r++){ for(let c=0;c<size;c++){ const b=document.createElement('div'); b.style.position='absolute'; b.style.left=posToXY(r,c).x+'px'; b.style.top=posToXY(r,c).y+'px'; b.style.width=posToXY(r,c).cell+'px'; b.style.height=posToXY(r,c).cell+'px'; b.style.borderRadius='6px'; b.style.background='rgba(255,255,255,0.6)'; b.style.boxSizing='border-box'; gridEl.appendChild(b); } }
   }
-  function addRandom(){ const p=randPos(); if(!p) return; grid[p[0]][p[1]] = Math.random()<0.9?2:4; }
-  function init(){ prevGrid = emptyGrid(); grid=emptyGrid(); score=0; loadBest(); addRandom(); addRandom(); render(); }
-  function saveBest(){ const b=Math.max(getBest(),score); localStorage.setItem('mini2048-best',b); if(bestEl) bestEl.textContent=b; }
-  function getBest(){ return parseInt(localStorage.getItem('mini2048-best')||'0',10); }
-  function loadBest(){ if(bestEl) bestEl.textContent=getBest(); }
-  function render(){ if(!gridEl) return; gridEl.innerHTML=''; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; const cell=document.createElement('div'); cell.textContent=v||''; cell.style.background=v?tileColor(v):'rgba(255,255,255,0.6)'; cell.style.boxShadow=v?'inset 0 1px 0 rgba(255,255,255,.35)':'none'; // animation classes
-      const prev = prevGrid ? prevGrid[r][c] : 0;
-      if(v){ if(prev===0){ cell.classList.add('tile-new'); cell.style.animationDelay = ((r*size+c)*28)+'ms'; }
-               else if(v!==prev){ cell.classList.add('tile-pop'); cell.style.animationDelay = ((r*size+c)*18)+'ms'; }
-      }
-      gridEl.appendChild(cell);
-    }
-    if(scoreEl) scoreEl.textContent=score; saveBest(); // store state for next render
-    prevGrid = grid.map(function(row){ return row.slice(); });
-  }
+
+  function createTileElement(id,value,r,c){ const t=document.createElement('div'); t.className='tile tile-new'; t.dataset.id=id; t.textContent=value; t.style.position='absolute'; t.style.zIndex=10; const p=posToXY(r,c); t.style.width=p.cell+'px'; t.style.height=p.cell+'px'; t.style.lineHeight=(p.cell)+'px'; t.style.borderRadius='6px'; t.style.textAlign='center'; t.style.transition='transform 200ms cubic-bezier(.2,.8,.2,1), background 120ms linear, opacity 220ms linear'; t.style.transform='translate3d('+p.x+'px,'+p.y+'px,0)'; t.style.background=tileColor(value); t.style.fontWeight='800'; t.style.color='#052b4a'; gridEl.appendChild(t); return t; }
+
   function tileColor(v){ const colors={2:'#f0f8ff',4:'#d0e8ff',8:'#a0d0ff',16:'#88b0ff',32:'#ffdd99',64:'#ffb366',128:'#ffd2a6',256:'#ffc090',512:'#ff9a9a',1024:'#ff7fbf',2048:'#ffd700'}; return colors[v]||'#9bd3ff'; }
+
+  function newTile(value,r,c){ const id='t'+(tileIdCounter++); const el=createTileElement(id,value,r,c); tilesById[id]={id,value,r,c,el,removed:false}; gridIds[r][c]=id; }
+
+  function addRandom(){ const empt=[]; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!gridIds[r][c]) empt.push([r,c]); if(!empt.length) return; const p=empt[Math.floor(Math.random()*empt.length)]; const v=Math.random()<0.9?2:4; newTile(v,p[0],p[1]); }
+
+  function loadBest(){ if(bestEl) bestEl.textContent = parseInt(localStorage.getItem('mini2048-best')||'0',10); }
+  function saveBest(){ const b=Math.max(parseInt(localStorage.getItem('mini2048-best')||'0',10), score); localStorage.setItem('mini2048-best',b); if(bestEl) bestEl.textContent=b; }
+
+  function renderScore(){ if(scoreEl) scoreEl.textContent=score; saveBest(); }
+
+  function slideRowIds(row){ const arr=row.filter(x=>x!==null); for(let i=0;i<arr.length-1;i++){ const a=tilesById[arr[i]]; const b=tilesById[arr[i+1]]; if(a && b && a.value===b.value){ // merge b into a
+        a.value *= 2; score += a.value; a.el.classList.add('tile-merge'); b.el.classList.add('to-remove'); b.removed = true; arr.splice(i+1,1); }
+    }
+    while(arr.length < size) arr.push(null); return arr; }
+
   function transpose(m){ return m[0].map((_,i)=>m.map(row=>row[i])); }
   function reverseRows(m){ return m.map(row=>row.slice().reverse()); }
-  function slide(row){ const arr=row.filter(x=>x); for(let i=0;i<arr.length-1;i++){ if(arr[i]===arr[i+1]){ arr[i]*=2; score+=arr[i]; arr.splice(i+1,1); } } while(arr.length< size) arr.push(0); return arr; }
-  function moveLeft(){ let moved=false; for(let r=0;r<size;r++){ const old=rowCopy(grid[r]); const ns=slide(grid[r]); grid[r]=ns; if(!moved && !sameRow(old,ns)) moved=true; } return moved; }
-  function moveRight(){ grid=reverseRows(grid); const moved=moveLeft(); grid=reverseRows(grid); return moved; }
-  function moveUp(){ grid=transpose(grid); const moved=moveLeft(); grid=transpose(grid); return moved; }
-  function moveDown(){ grid=transpose(grid); grid=reverseRows(grid); const moved=moveLeft(); grid=reverseRows(grid); grid=transpose(grid); return moved; }
-  function rowCopy(r){ return r.slice(); }
-  function sameRow(a,b){ return a.join(',')===b.join(','); }
-  function isGameOver(){ if(randPos()) return false; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; if((r+1<size && grid[r+1][c]===v) || (c+1<size && grid[r][c+1]===v)) return false; } return true; }
-  function step(direction){ let moved=false; if(direction==='left') moved=moveLeft(); if(direction==='right') moved=moveRight(); if(direction==='up') moved=moveUp(); if(direction==='down') moved=moveDown(); if(moved){ addRandom(); render(); if(win()) { if(msgEl) msgEl.textContent='Bravo — 2048 atteint !'; } else if(isGameOver()){ if(msgEl) msgEl.textContent='Game over.'; } else if(msgEl) msgEl.textContent=''; } }
-  function win(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(grid[r][c]>=2048) return true; return false; }
-  document.addEventListener('keydown', function(e){ const k=e.key; if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)){ e.preventDefault(); if(k==='ArrowLeft') step('left'); if(k==='ArrowRight') step('right'); if(k==='ArrowUp') step('up'); if(k==='ArrowDown') step('down'); } });
+
+  function moveLeft(){ let moved=false; for(let r=0;r<size;r++){ const old = gridIds[r].slice(); const ns = slideRowIds(old.slice()); gridIds[r] = ns.slice(); if(ns.join(',') !== old.join(',')) moved = true; } return moved; }
+  function moveRight(){ for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); const moved = moveLeft(); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); return moved; }
+  function moveUp(){ gridIds = transpose(gridIds); const moved = moveLeft(); gridIds = transpose(gridIds); return moved; }
+  function moveDown(){ gridIds = transpose(gridIds); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); const moved = moveLeft(); for(let r=0;r<size;r++) gridIds[r] = gridIds[r].slice().reverse(); gridIds = transpose(gridIds); return moved; }
+
+  function animateTiles(){ const cell=getCellSize(); // update sizes
+    Object.values(tilesById).forEach(t => { if(t.removed) { t.el.style.opacity='0'; t.el.style.transform += ' scale(.6)'; setTimeout(()=>{ if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); delete tilesById[t.id]; },220); } else { // find position in gridIds
+        for(let r=0;r<size;r++) for(let c=0;c<size;c++){ if(gridIds[r][c]===t.id){ t.r=r; t.c=c; const p=posToXY(r,c); t.el.style.width=p.cell+'px'; t.el.style.height=p.cell+'px'; t.el.style.lineHeight=(p.cell)+'px'; t.el.style.transform='translate3d('+p.x+'px,'+p.y+'px,0)'; t.el.style.background = tileColor(t.value); t.el.textContent = t.value; // pop animation for merged tiles
+            if(t.el.classList.contains('tile-merge')){ t.el.style.transition='transform 220ms cubic-bezier(.2,.9,.3,1)'; t.el.style.transform += ' scale(1.06)'; setTimeout(()=>{ if(t.el) t.el.style.transform = 'translate3d('+p.x+'px,'+p.y+'px,0)'; t.el.classList.remove('tile-merge'); },220); }
+            // remove tile-new class after first appearance
+            setTimeout(()=>{ if(t.el) t.el.classList.remove('tile-new'); },300);
+        } }
+    }); renderScore(); }
+
+  function isGameOver(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!gridIds[r][c]) return false; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const id=gridIds[r][c]; const v = tilesById[id] && tilesById[id].value; if(r+1<size){ const id2=gridIds[r+1][c]; if(tilesById[id2] && tilesById[id2].value===v) return false; } if(c+1<size){ const id2=gridIds[r][c+1]; if(tilesById[id2] && tilesById[id2].value===v) return false; } } return true; }
+  function win(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const id=gridIds[r][c]; if(tilesById[id] && tilesById[id].value>=2048) return true; } return false; }
+
+  function step(direction){ let moved=false; if(direction==='left') moved=moveLeft(); if(direction==='right') moved=moveRight(); if(direction==='up') moved=moveUp(); if(direction==='down') moved=moveDown(); if(moved){ addRandom(); animateTiles(); if(win()){ if(msgEl) msgEl.textContent='Bravo — 2048 atteint !'; } else if(isGameOver()){ if(msgEl) msgEl.textContent='Game over.'; } else if(msgEl) msgEl.textContent=''; }
+  }
+
+  // input handlers
+  document.addEventListener('keydown', function(e){ const k=e.key; if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)){ e.preventDefault(); step(k.replace('Arrow','').toLowerCase()); } });
   (function(){ let sx,sy; const root=document.getElementById('game-win'); if(!root) return; root.addEventListener('touchstart', function(e){ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; }); root.addEventListener('touchend', function(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>30||Math.abs(dy)>30){ if(Math.abs(dx)>Math.abs(dy)) dx>0?step('right'):step('left'); else dy>0?step('down'):step('up'); } sx=sy=null; }); })();
-  const ng=document.getElementById('newGame'); if(ng) ng.addEventListener('click', function(){ init(); if(msgEl) msgEl.textContent=''; });
-  // init on load
-  init();
+
+  // leaderboard and login (local only)
+  function currentUser(){ return localStorage.getItem('mini2048-user') || null; }
+  function setUser(u){ if(u) localStorage.setItem('mini2048-user',u); else localStorage.removeItem('mini2048-user'); renderUser(); }
+  function renderUser(){ const u=currentUser(); currentUserEl.textContent = u || '—'; usernameInput.value = u || ''; }
+  function getLeaderboard(){ return JSON.parse(localStorage.getItem('mini2048-leaderboard')||'[]'); }
+  function saveLeaderboard(list){ localStorage.setItem('mini2048-leaderboard', JSON.stringify(list)); renderLeaderboard(); }
+  function renderLeaderboard(){ const list=getLeaderboard().slice().sort((a,b)=>b.score-a.score).slice(0,10); leaderboardEl.innerHTML=''; if(!list.length) leaderboardEl.textContent='Aucun score'; else { list.forEach((e,i)=>{ const row=document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid rgba(0,0,0,.04)'; row.innerHTML = '<div>'+(i+1)+'. <strong>'+escapeHtml(e.user)+'</strong></div><div>'+e.score+'</div>'; leaderboardEl.appendChild(row); }); } }
+  function escapeHtml(s){ return String(s).replace(/[&<>'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
+
+  loginBtn.addEventListener('click', function(){ var u=usernameInput.value.trim(); if(!u) return alert('Entrez un pseudo'); setUser(u); });
+  logoutBtn.addEventListener('click', function(){ setUser(null); });
+  submitBtn.addEventListener('click', function(){ const u=currentUser(); if(!u) return alert('Connectez-vous pour soumettre'); const list=getLeaderboard(); list.push({user:u,score:score,date:(new Date()).toISOString()}); saveLeaderboard(list); alert('Score soumis !'); });
+  clearBoardBtn.addEventListener('click', function(){ if(!confirm('Effacer le classement local ?')) return; saveLeaderboard([]); });
+
+  // new game handler
+  document.getElementById('newGame').addEventListener('click', function(){ startNewGame(); });
+
+  function startNewGame(){ gridIds = makeGridIds(); tilesById={}; score=0; tileIdCounter=1; createBackground(); addRandom(); addRandom(); renderScore(); renderLeaderboard(); msgEl.textContent=''; }
+
+  // responsive resizing
+  window.addEventListener('resize', function(){ createBackground(); animateTiles(); });
+
+  // init
+  loadBest(); renderUser(); startNewGame();
+
 })();
 </script>
 
