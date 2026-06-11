@@ -260,7 +260,8 @@
       100% { transform: scale(1); opacity: 1; }
     }
     /* Make leaderboard flow naturally so page scroll works on mobile; avoid inner scrollbars */
-    #lb-list { background: rgba(255,255,255,.6); padding: 8px; border-radius: 8px; overflow: visible; max-height: none; min-width: 0; }
+    /* leaderboard block: large scrollable area showing all entries */
+    #lb-list { background: rgba(255,255,255,.6); padding: 8px; border-radius: 8px; overflow: auto; max-height: 70vh; min-width: 190px; }
     #lb-list .lb-row { display: flex; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid rgba(0,0,0,.05); font-size: 12px; }
     #lb-list .lb-row:last-child { border-bottom: none; }
     #lb-list .lb-rank { color: var(--text2); margin-right: 4px; }
@@ -791,7 +792,7 @@
     async function renderLeaderboard(){
       lbEl.innerHTML = '<div style="color:var(--text2);font-size:12px;padding:6px">Chargement…</div>';
       const {rows} = await fetchLeaderboard();
-      const sorted = rows.slice().sort((a,b)=>b.score-a.score).slice(0,10);
+      const sorted = rows.slice().sort((a,b)=>b.score-a.score);
       if(!sorted.length){ lbEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px">Aucun score</div>'; return; }
       lbEl.innerHTML = sorted.map((e,i)=>`
       <div class="lb-row">

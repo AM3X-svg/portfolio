@@ -18,9 +18,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // parse query params from req.url
+    let all = false;
+    try { const url = new URL(req.url, 'http://localhost'); all = url.searchParams.has('all'); } catch(e){}
+
     if (req.method === 'GET') {
-      // Get top 10 scores
-      const url = `${SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/leaderboard?select=username,score,date&order=score.desc&limit=10`;
+      // Get top scores (or all if ?all=1)
+      let url = `${SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/leaderboard?select=username,score,date&order=score.desc`;
+      if (!all) url += '&limit=10';
       const r = await fetch(url, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
       });
@@ -41,10 +46,6 @@ export default async function handler(req, res) {
       const existingResp = await fetch(q, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
       });
-      if (!existingResp.ok) {
-        // still attempt insert
-        console.warn('Failed to read existing row, status', existingResp.status);
-      }
       const existingRows = await existingResp.json().catch(()=>[]);
 
       if (Array.isArray(existingRows) && existingRows.length>0) {
