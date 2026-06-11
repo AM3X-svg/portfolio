@@ -430,9 +430,69 @@
     <div class="status-bar">🔒 alexandre.klotz &middot; Formation cybersécurité</div>
   </div>
 
+  <!-- MINI-JEU 2048 -->
+  <div id="game-win" class="win fadein">
+    <div class="win-title">🎮 Mini-jeu — 2048</div>
+    <div class="win-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:8px">Combinez les tuiles pour atteindre 2048. Utilisez les flèches ou swipe (mobile).</p>
+      <div id="game" style="display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div id="scoreRow" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button id="newGame" class="xp-btn">Nouvelle partie</button>
+          <div style="font-weight:700;color:var(--text2)">Score: <span id="score">0</span></div>
+          <div style="font-weight:700;color:var(--text2)">Meilleur: <span id="best">0</span></div>
+        </div>
+        <div id="grid" style="width:320px;height:320px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:10px;border-radius:8px;background:rgba(0,0,0,0.04);padding:10px"></div>
+        <p id="gameMsg" style="color:var(--text2);font-size:13px;margin-top:6px"></p>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <footer>© 2025 Alexandre KLOTZ &middot; HTML / CSS / JS vanilla &middot; Déployé sur Vercel</footer>
+
+<!-- 2048 game script -->
+<script>
+(function(){
+  const size=4; let grid, score=0;
+  const gridEl=document.getElementById('grid');
+  const scoreEl=document.getElementById('score');
+  const bestEl=document.getElementById('best');
+  const msgEl=document.getElementById('gameMsg');
+  function emptyGrid(){ return Array.from({length:size},()=>Array(size).fill(0)); }
+  function randPos(){
+    const empt=[]; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(grid[r][c]===0) empt.push([r,c]);
+    if(!empt.length) return null; return empt[Math.floor(Math.random()*empt.length)];
+  }
+  function addRandom(){ const p=randPos(); if(!p) return; grid[p[0]][p[1]] = Math.random()<0.9?2:4; }
+  function init(){ grid=emptyGrid(); score=0; loadBest(); addRandom(); addRandom(); render(); }
+  function saveBest(){ const b=Math.max(getBest(),score); localStorage.setItem('mini2048-best',b); bestEl.textContent=b; }
+  function getBest(){ return parseInt(localStorage.getItem('mini2048-best')||'0',10); }
+  function loadBest(){ bestEl.textContent=getBest(); }
+  function render(){ if(!gridEl) return; gridEl.innerHTML=''; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; const cell=document.createElement('div'); cell.style.display='flex'; cell.style.alignItems='center'; cell.style.justifyContent='center'; cell.style.borderRadius='6px'; cell.style.fontWeight='700'; cell.style.fontSize='20px'; cell.style.background=v?tileColor(v):'rgba(255,255,255,0.6)'; cell.style.boxShadow=v?'inset 0 1px 0 rgba(255,255,255,.35)':'none'; cell.textContent=v||''; gridEl.appendChild(cell); }
+    if(scoreEl) scoreEl.textContent=score; saveBest(); }
+  function tileColor(v){ const colors={2:'#f0f8ff',4:'#d0e8ff',8:'#a0d0ff',16:'#88b0ff',32:'#ffdd99',64:'#ffb366',128:'#ffd2a6',256:'#ffc090',512:'#ff9a9a',1024:'#ff7fbf',2048:'#ffd700'}; return colors[v]||'#9bd3ff'; }
+  function transpose(m){ return m[0].map((_,i)=>m.map(row=>row[i])); }
+  function reverseRows(m){ return m.map(row=>row.slice().reverse()); }
+  function slide(row){ const arr=row.filter(x=>x); for(let i=0;i<arr.length-1;i++){ if(arr[i]===arr[i+1]){ arr[i]*=2; score+=arr[i]; arr.splice(i+1,1); } } while(arr.length< size) arr.push(0); return arr; }
+  function moveLeft(){ let moved=false; for(let r=0;r<size;r++){ const old=rowCopy(grid[r]); const ns=slide(grid[r]); grid[r]=ns; if(!moved && !sameRow(old,ns)) moved=true; } return moved; }
+  function moveRight(){ grid=reverseRows(grid); const moved=moveLeft(); grid=reverseRows(grid); return moved; }
+  function moveUp(){ grid=transpose(grid); const moved=moveLeft(); grid=transpose(grid); return moved; }
+  function moveDown(){ grid=transpose(grid); grid=reverseRows(grid); const moved=moveLeft(); grid=reverseRows(grid); grid=transpose(grid); return moved; }
+  function rowCopy(r){ return r.slice(); }
+  function sameRow(a,b){ return a.join(',')===b.join(','); }
+  function isGameOver(){ if(randPos()) return false; for(let r=0;r<size;r++) for(let c=0;c<size;c++){ const v=grid[r][c]; if((r+1<size && grid[r+1][c]===v) || (c+1<size && grid[r][c+1]===v)) return false; } return true; }
+  function step(direction){ let moved=false; if(direction==='left') moved=moveLeft(); if(direction==='right') moved=moveRight(); if(direction==='up') moved=moveUp(); if(direction==='down') moved=moveDown(); if(moved){ addRandom(); render(); if(win()) { if(msgEl) msgEl.textContent='Bravo — 2048 atteint !'; } else if(isGameOver()){ if(msgEl) msgEl.textContent='Game over.'; } else if(msgEl) msgEl.textContent=''; } }
+  function win(){ for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(grid[r][c]>=2048) return true; return false; }
+  document.addEventListener('keydown', function(e){ const k=e.key; if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)){ e.preventDefault(); if(k==='ArrowLeft') step('left'); if(k==='ArrowRight') step('right'); if(k==='ArrowUp') step('up'); if(k==='ArrowDown') step('down'); } });
+  (function(){ let sx,sy; const root=document.getElementById('game-win'); if(!root) return; root.addEventListener('touchstart', function(e){ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; }); root.addEventListener('touchend', function(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>30||Math.abs(dy)>30){ if(Math.abs(dx)>Math.abs(dy)) dx>0?step('right'):step('left'); else dy>0?step('down'):step('up'); } sx=sy=null; }); })();
+  const ng=document.getElementById('newGame'); if(ng) ng.addEventListener('click', function(){ init(); if(msgEl) msgEl.textContent=''; });
+  // init on load
+  init();
+})();
+</script>
+
+<!-- end 2048 script -->
 
 <script>
   function scroll_to(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
