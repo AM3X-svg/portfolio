@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alexandre KLOTZ — Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sky1: #c8e8ff; --sky2: #e8f6ff; --sky3: #a0d4f5;
+      --glass: rgba(255,255,255,0.45); --glass2: rgba(255,255,255,0.25);
+      --glass-border: rgba(255,255,255,0.8);
+      --accent: #0078d4; --accent2: #00b4ff;
+      --green: #3cb371; --text: #1a2a3a; --text2: #4a6080;
+      --xp-title: linear-gradient(180deg,#5897ea 0%,#3a6bc4 100%);
+      --xp-btn: linear-gradient(180deg,#f0f8ff 0%,#c8e0f8 50%,#a8ccf0 51%,#d0e8fc 100%);
+      --xp-btn-border: #6699cc;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Tahoma', 'Segoe UI', sans-serif;
+      font-size: 13px; color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+      background:
+              radial-gradient(ellipse 80% 50% at 50% -10%, #b3dff5 0%, transparent 70%),
+              radial-gradient(ellipse 60% 40% at 80% 60%, #c8f0d8 0%, transparent 60%),
+              radial-gradient(ellipse 50% 50% at 20% 80%, #dcd0ff 0%, transparent 60%),
+              linear-gradient(180deg, #e8f6ff 0%, #f0faff 40%, #e0f4ea 70%, #dce8ff 100%);
+      background-attachment: fixed;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+              radial-gradient(ellipse 220px 70px at 15% 12%, rgba(255,255,255,.7) 0%, transparent 70%),
+              radial-gradient(ellipse 140px 50px at 70% 8%, rgba(255,255,255,.65) 0%, transparent 70%),
+              radial-gradient(ellipse 180px 55px at 88% 18%, rgba(255,255,255,.6) 0%, transparent 70%),
+              radial-gradient(ellipse 100px 40px at 40% 5%, rgba(255,255,255,.55) 0%, transparent 70%);
+    }
+    /* TASKBAR */
+    #taskbar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      height: 36px;
+      background: linear-gradient(180deg, #245edc 0%, #1941b8 40%, #1538a8 60%, #2255d0 100%);
+      border-top: 1px solid #5080d8;
+      display: flex; align-items: center; gap: 4px; padding: 0 4px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
+    }
+    .start-btn {
+      background: linear-gradient(180deg, #5fbd42 0%, #3a9e1a 40%, #2e8e12 60%, #4ab832 100%);
+      border: 1px solid #1e6e08; border-radius: 12px;
+      padding: 2px 14px 2px 10px; color: #fff;
+      font-family: 'Tahoma', sans-serif; font-weight: 700; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 3px rgba(0,0,0,.4);
+      text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+    .taskbar-btn {
+      height: 26px; padding: 0 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 50%, rgba(0,0,0,.1) 100%);
+      border: 1px solid rgba(255,255,255,.3); border-radius: 3px;
+      color: #fff; font-size: 11px; font-family: 'Tahoma', sans-serif; cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap;
+    }
+    .taskbar-btn:hover { background: linear-gradient(180deg, rgba(255,255,255,.4) 0%, rgba(255,255,255,.2) 100%); }
+    .taskbar-clock {
+      margin-left: auto;
+      background: linear-gradient(180deg, rgba(0,0,40,.3) 0%, rgba(0,0,80,.2) 100%);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 3px;
+      padding: 0 8px; height: 26px; display: flex; align-items: center;
+      color: #fff; font-size: 11px; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+    }
+    /* XP WINDOW */
+    .win {
+      position: relative; background: var(--glass);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border-radius: 8px 8px 6px 6px; border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,80,160,.18), inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,80,.08);
+      overflow: hidden;
+    }
+    .win-title {
+      display: flex; align-items: center; gap: 6px; padding: 4px 6px;
+      background: var(--xp-title); color: #fff;
+      font-weight: 700; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,.5); user-select: none;
+    }
+    .win-controls { margin-left: auto; display: flex; gap: 2px; }
+    .win-btn {
+      width: 22px; height: 18px; border-radius: 3px; border: none; cursor: pointer;
+      font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .win-btn-min { background: linear-gradient(180deg,#f5d76e,#e8a800); color:#5a3a00; }
+    .win-btn-max { background: linear-gradient(180deg,#a8e060,#62b800); color:#1a4000; }
+    .win-btn-cls { background: linear-gradient(180deg,#ff7070,#e00000); color:#fff; }
+    .win-body { padding: 16px; }
+    /* NAV */
+    #nav-win { position: fixed; top: 12px; left: 0; right: 0; z-index: 100; margin: 0 auto; max-width: 860px; width: calc(100% - 32px); }
+    .nav-tabs {
+      display: flex; gap: 3px; padding: 0 8px;
+      background: linear-gradient(180deg, rgba(200,220,255,.5) 0%, rgba(160,200,240,.3) 100%);
+      border-bottom: 1px solid rgba(255,255,255,.6);
+    }
+    .nav-tab {
+      padding: 6px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(220,240,255,.5) 100%);
+      border: 1px solid rgba(255,255,255,.7); border-bottom: none; border-radius: 5px 5px 0 0;
+      font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; text-decoration: none; transition: background .15s;
+    }
+    .nav-tab:hover, .nav-tab.active { background: linear-gradient(180deg, #fff 0%, rgba(220,240,255,.9) 100%); }
+    /* LAYOUT */
+    main { padding: 80px 16px 60px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    /* HERO */
+    #hero-win .win-body { display: flex; gap: 20px; align-items: flex-start; }
+    .hero-avatar {
+      flex-shrink: 0; width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, #b8e0ff, #d0f0c0, #e8d8ff);
+      border: 3px solid rgba(255,255,255,.9); box-shadow: 0 2px 12px rgba(0,80,160,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: #2255aa; font-family: 'Orbitron', monospace;
+    }
+    .hero-text { flex: 1; }
+    .hero-name {
+      font-family: 'Orbitron', monospace; font-size: 26px; font-weight: 700;
+      background: linear-gradient(135deg, #0055aa, #0099dd, #00ccaa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.1; margin-bottom: 4px;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, #0060c8, #0090e0); color: #fff;
+      font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,80,200,.3); margin-bottom: 10px;
+    }
+    .hero-bio { color: var(--text2); line-height: 1.6; font-size: 12px; margin-bottom: 14px; }
+    .xp-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--xp-btn); border: 1px solid var(--xp-btn-border); border-radius: 4px;
+      padding: 4px 14px; font-size: 12px; font-weight: 700; color: var(--text);
+      cursor: pointer; text-decoration: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 1px 3px rgba(0,0,0,.15); transition: all .1s;
+    }
+    .xp-btn:hover { background: linear-gradient(180deg, #d8eeff 0%, #a8d0f0 50%, #88b8e0 51%, #c0dcf4 100%); }
+    .xp-btn:active { transform: translateY(1px); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .status-bar {
+      display: flex; gap: 8px; align-items: center;
+      background: rgba(255,255,255,.4); border-top: 1px solid rgba(255,255,255,.6);
+      padding: 4px 10px; font-size: 11px; color: var(--text2);
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; flex-shrink:0; }
+    /* SKILLS */
+    .skill-section { margin-bottom: 12px; }
+    .skill-label { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .skill-pill {
+      padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 700;
+      background: linear-gradient(180deg, rgba(255,255,255,.8) 0%, rgba(180,220,255,.5) 100%);
+      border: 1px solid rgba(100,160,220,.5); color: #1a4a80;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9); cursor: default; transition: all .15s;
+    }
+    .skill-pill:hover { background: linear-gradient(180deg, rgba(200,240,255,.9) 0%, rgba(150,210,255,.7) 100%); border-color: rgba(0,120,220,.6); }
+    .xp-progress-wrap {
+      background: rgba(255,255,255,.3); border: 1px solid rgba(0,100,200,.2);
+      border-radius: 3px; height: 14px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
+    }
+    .xp-progress {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(180deg, #4cc8f0 0%, #0080c8 40%, #0060a0 60%, #40a0d8 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5); position: relative; overflow: hidden;
+    }
+    .xp-progress::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+      animation: shine 2s infinite;
+    }
+    @keyframes shine { to { left: 160%; } }
+    /* PROJECTS */
+    .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 14px; }
+    .proj-card {
+      background: var(--glass); backdrop-filter: blur(14px) saturate(150%);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      border-radius: 8px 8px 6px 6px; border: 1px solid rgba(255,255,255,.75);
+      box-shadow: 0 4px 20px rgba(0,60,140,.12), inset 0 1px 0 rgba(255,255,255,.9);
+      overflow: hidden; transition: transform .2s, box-shadow .2s;
+    }
+    .proj-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,80,180,.18), inset 0 1px 0 rgba(255,255,255,.9); }
+    .proj-titlebar {
+      display: flex; align-items: center; gap: 6px; padding: 4px 8px;
+      background: var(--xp-title); color: #fff; font-size: 11px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+    .proj-type-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-web { background: #7ec8ff; } .dot-api { background: #7ef0b8; } .dot-jeu { background: #ffaae0; }
+    .proj-titlebar-controls { margin-left: auto; display: flex; gap: 2px; }
+    .proj-titlebar-btn { width: 14px; height: 12px; border-radius: 2px; border: none; cursor: default; }
+    .p-min { background: linear-gradient(180deg,#f5d76e,#e8a800); } .p-max { background: linear-gradient(180deg,#a8e060,#62b800); } .p-cls { background: linear-gradient(180deg,#ff7070,#e00000); }
+    .proj-body { padding: 12px 14px; }
+    .proj-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .proj-desc { color: var(--text2); font-size: 12px; line-height: 1.6; margin-bottom: 10px; }
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+    .proj-tag { font-size: 10px; padding: 1px 8px; border-radius: 8px; background: rgba(0,100,200,.08); border: 1px solid rgba(0,100,200,.2); color: #0055aa; font-weight: 700; }
+    .proj-footer { border-top: 1px solid rgba(200,220,240,.5); padding: 8px 14px; display: flex; gap: 6px; align-items: center; }
+    .badge-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 8px; margin-left: auto; }
+    .badge-web  { background: rgba(0,140,255,.12); color: #005aaa; border: 1px solid rgba(0,140,255,.25); }
+    .badge-api  { background: rgba(0,200,120,.12); color: #006040; border: 1px solid rgba(0,200,120,.25); }
+    .badge-jeu  { background: rgba(200,0,160,.1);  color: #800060; border: 1px solid rgba(200,0,160,.2); }
+    /* CONTACT */
+    .contact-grid { display: flex; flex-direction: column; gap: 8px; }
+    .contact-row {
+      display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(90deg, rgba(255,255,255,.5), rgba(220,240,255,.3));
+      border: 1px solid rgba(255,255,255,.7); border-radius: 6px; padding: 10px 14px;
+      text-decoration: none; color: var(--text); transition: all .15s;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    .contact-row:hover { background: linear-gradient(90deg, rgba(255,255,255,.8), rgba(200,235,255,.6)); border-color: rgba(0,120,220,.4); color: #0055cc; }
+    .contact-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .ci-gh  { background: linear-gradient(135deg, #2d333b, #424a53); color: #fff; }
+    .ci-li  { background: linear-gradient(135deg, #0a66c2, #0a96e2); color: #fff; }
+    .contact-label { font-weight: 700; font-size: 12px; }
+    .contact-url { font-size: 11px; color: var(--text2); }
+    /* BUBBLE DECO */
+    .bubble { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.6), rgba(180,220,255,.15) 60%, transparent); border: 1px solid rgba(255,255,255,.4); }
+    /* FOOTER */
+    footer { text-align: center; padding: 1rem 0 52px; color: var(--text2); font-size: 11px; position: relative; z-index: 1; }
+    /* FADE IN */
+    .fadein { opacity:0; transform:translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+    .fadein.show { opacity:1; transform:none; }
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 14px; }
+    ::-webkit-scrollbar-track { background: linear-gradient(90deg, #c8dcf0, #d8ecff); border: 1px solid #b0ccee; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #c8e0f8 0%, #80b8e8 40%, #60a0d8 60%, #a0caf0 100%); border: 1px solid #6090c8; border-radius: 2px; }
+    @media (max-width:640px) {
+      #hero-win .win-body { flex-direction: column; align-items: center; text-align: center; }
+      .hero-name { font-size: 20px; }
+      .btn-row { justify-content: center; }
+      .proj-grid { grid-template-columns: 1fr; }
+      .taskbar-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bubble" style="width:300px;height:300px;top:-80px;right:-60px;opacity:.5;position:fixed"></div>
+<div class="bubble" style="width:180px;height:180px;top:40%;left:-50px;opacity:.35;position:fixed"></div>
+<div class="bubble" style="width:220px;height:220px;bottom:20%;right:5%;opacity:.3;position:fixed"></div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <button class="start-btn">
+    <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="4" cy="4" r="3.5" fill="#ff4444"/><circle cx="12" cy="4" r="3.5" fill="#44cc44"/><circle cx="4" cy="12" r="3.5" fill="#4444ff"/><circle cx="12" cy="12" r="3.5" fill="#ffcc00"/></svg>
+    démarrer
+  </button>
+  <button class="taskbar-btn" onclick="scroll_to('hero-win')">🧑‍💻 Profil</button>
+  <button class="taskbar-btn" onclick="scroll_to('skills-win')">⚡ Skills</button>
+  <button class="taskbar-btn" onclick="scroll_to('projects-win')">📁 Projets</button>
+  <button class="taskbar-btn" onclick="scroll_to('contact-win')">📧 Contact</button>
+  <div class="taskbar-clock" id="clock">00:00</div>
+</div>
+
+<!-- NAV WINDOW -->
+<div id="nav-win" class="win fadein">
+  <div class="win-title">
+    <span>🌐</span> Portfolio — Alexandre KLOTZ
+    <div class="win-controls">
+      <button class="win-btn win-btn-min">─</button>
+      <button class="win-btn win-btn-max">□</button>
+      <button class="win-btn win-btn-cls">✕</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <a class="nav-tab active" href="#hero-win">Profil</a>
+    <a class="nav-tab" href="#skills-win">Compétences</a>
+    <a class="nav-tab" href="#projects-win">Projets</a>
+    <a class="nav-tab" href="#contact-win">Contact</a>
+  </div>
+</div>
+
+<main>
+
+  <!-- HERO -->
+  <div id="hero-win" class="win fadein">
+    <div class="win-title">
+      <span>👤</span> Profil.exe
+      <div class="win-controls">
+        <button class="win-btn win-btn-min">─</button>
+        <button class="win-btn win-btn-max">□</button>
+        <button class="win-btn win-btn-cls">✕</button>
+      </div>
+    </div>
+    <div class="win-body">
+      <div class="hero-avatar">AK</div>
+      <div class="hero-text">
+        <div class="hero-name">Alexandre KLOTZ</div>
+        <div class="hero-tag">🔒 Étudiant en Cybersécurité</div>
+        <p class="hero-bio">Développeur web passionné de cybersécurité. Je construis des projets allant de boutiques e-commerce à des outils exploitant des APIs tierces, avec un soin particulier pour l'expérience utilisateur et la logique back-end. Curieux, autonome, orienté solutions.</p>
+        <div class="btn-row">
+          <a href="https://github.com/AM3X-svg" target="_blank" rel="noopener" class="xp-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.6-2.67-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02.005 2.05.14 3.01.4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/alexandre-k-801438256/" target="_blank" rel="noopener" class="xp-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="status-bar"><div class="status-dot"></div>Disponible pour stage / alternance &middot; Marseille, France</div>
+  </div>
+
+  <!-- SKILLS -->
+  <div id="skills-win" class="win fadein">
+    <div class="win-title">
+      <span>⚡</span> Compétences — stack technique
+      <div class="win-controls"><button class="win-btn win-btn-min">─</button><button class="win-btn win-btn-max">□</button><button class="win-btn win-btn-cls">✕</button></div>
+    </div>
+    <div class="win-body">
+      <div class="skill-section">
+        <div class="skill-label">Front-end</div>
+        <div class="skill-tags"><span class="skill-pill">HTML</span><span class="skill-pill">CSS</span><span class="skill-pill">JavaScript</span><span class="skill-pill">Responsive Design</span></div>
+      </div>
+      <div class="skill-section" style="margin-top:12px">
+        <div class="skill-label">Back-end &amp; Data</div>
+        <div class="skill-tags"><span class="skill-pill">Backend</span><span class="skill-pill">Base de données</span><span class="skill-pill">API REST</span><span class="skill-pill">Authentification</span></div>
+      </div>
+      <div class="skill-section" style="margin-top:12px">
+        <div class="skill-label">Cybersécurité &amp; outils</div>
+        <div class="skill-tags"><span class="skill-pill">Cybersécurité</span><span class="skill-pill">Git &amp; GitHub</span><span class="skill-pill">Linux</span></div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="skill-label" style="margin-bottom:8px">Niveau global</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px"><div class="skill-label" style="margin-bottom:3px">Front-end</div><div class="xp-progress-wrap"><div class="xp-progress" style="width:85%"></div></div></div>
+          <div style="flex:1;min-width:140px"><div class="skill-label" style="margin-bottom:3px">Back-end</div><div class="xp-progress-wrap"><div class="xp-progress" style="width:68%"></div></div></div>
+          <div style="flex:1;min-width:140px"><div class="skill-label" style="margin-bottom:3px">Cybersécurité</div><div class="xp-progress-wrap"><div class="xp-progress" style="width:55%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="projects-win" class="win fadein">
+    <div class="win-title">
+      <span>📁</span> Mes Projets (5 fichiers)
+      <div class="win-controls"><button class="win-btn win-btn-min">─</button><button class="win-btn win-btn-max">□</button><button class="win-btn win-btn-cls">✕</button></div>
+    </div>
+    <div class="win-body">
+      <div class="proj-grid">
+
+        <div class="proj-card">
+          <div class="proj-titlebar"><div class="proj-type-dot dot-web"></div>boutique-cyberpunk.js<div class="proj-titlebar-controls"><button class="proj-titlebar-btn p-min"></button><button class="proj-titlebar-btn p-max"></button><button class="proj-titlebar-btn p-cls"></button></div></div>
+          <div class="proj-body">
+            <div class="proj-title">🛒 Boutique Cyberpunk</div>
+            <p class="proj-desc">Boutique de vente de véhicules thème Cyberpunk avec gestion de stock, sprites, choix de couleurs, livraison et connexion utilisateur.</p>
+            <div class="proj-tags"><span class="proj-tag">JavaScript</span><span class="proj-tag">HTML/CSS</span><span class="proj-tag">Stock</span><span class="proj-tag">Auth</span></div>
+          </div>
+          <div class="proj-footer"><a href="https://github.com/enzocauchi/livrables-boutique-js-amex" target="_blank" class="xp-btn">📂 Code</a><span class="badge-type badge-web">Web</span></div>
+        </div>
+
+        <div class="proj-card">
+          <div class="proj-titlebar"><div class="proj-type-dot dot-api"></div>pokedex-interactive.js<div class="proj-titlebar-controls"><button class="proj-titlebar-btn p-min"></button><button class="proj-titlebar-btn p-max"></button><button class="proj-titlebar-btn p-cls"></button></div></div>
+          <div class="proj-body">
+            <div class="proj-title">⚡ Pokédex Interactif</div>
+            <p class="proj-desc">Application consommant l'API Pokémon avec filtres multi-critères, favoris, connexion et Pokémon aléatoire en page d'accueil.</p>
+            <div class="proj-tags"><span class="proj-tag">JavaScript</span><span class="proj-tag">REST API</span><span class="proj-tag">Filtres</span><span class="proj-tag">Auth</span></div>
+          </div>
+          <div class="proj-footer"><a href="https://github.com/AM3X-svg/choubigroupgroupietracker" target="_blank" class="xp-btn">📂 Code</a><span class="badge-type badge-api">API</span></div>
+        </div>
+
+        <div class="proj-card">
+          <div class="proj-titlebar"><div class="proj-type-dot dot-web"></div>forum-musical.html<div class="proj-titlebar-controls"><button class="proj-titlebar-btn p-min"></button><button class="proj-titlebar-btn p-max"></button><button class="proj-titlebar-btn p-cls"></button></div></div>
+          <div class="proj-body">
+            <div class="proj-title">🎵 Forum Musical</div>
+            <p class="proj-desc">Forum dédié à la musique avec base de données personnelle, filtres artiste/genre, connexion et panel administrateur de modération.</p>
+            <div class="proj-tags"><span class="proj-tag">HTML/CSS</span><span class="proj-tag">JavaScript</span><span class="proj-tag">Base de données</span><span class="proj-tag">Admin</span></div>
+          </div>
+          <div class="proj-footer"><a href="https://github.com/Omrane02/livrablesforumteamXXL" target="_blank" class="xp-btn">📂 Code</a><span class="badge-type badge-web">Web</span></div>
+        </div>
+
+        <div class="proj-card">
+          <div class="proj-titlebar"><div class="proj-type-dot dot-jeu"></div>puissance4.game.js<div class="proj-titlebar-controls"><button class="proj-titlebar-btn p-min"></button><button class="proj-titlebar-btn p-max"></button><button class="proj-titlebar-btn p-cls"></button></div></div>
+          <div class="proj-body">
+            <div class="proj-title">🔴 Puissance 4</div>
+            <p class="proj-desc">Implémentation complète du Puissance 4 avec logique JavaScript soignée, connexion des joueurs et gestion robuste des erreurs.</p>
+            <div class="proj-tags"><span class="proj-tag">JavaScript</span><span class="proj-tag">HTML/CSS</span><span class="proj-tag">Logique jeu</span><span class="proj-tag">Erreurs</span></div>
+          </div>
+          <div class="proj-footer"><a href="https://github.com/nikita-ynov/PUISSANCE4" target="_blank" class="xp-btn">📂 Code</a><span class="badge-type badge-jeu">Jeu</span></div>
+        </div>
+
+        <div class="proj-card">
+          <div class="proj-titlebar"><div class="proj-type-dot dot-api"></div>spotify-api.js<div class="proj-titlebar-controls"><button class="proj-titlebar-btn p-min"></button><button class="proj-titlebar-btn p-max"></button><button class="proj-titlebar-btn p-cls"></button></div></div>
+          <div class="proj-body">
+            <div class="proj-title">🎧 API Spotify</div>
+            <p class="proj-desc">Exploration de l'API Spotify pour accéder aux données d'artistes, avec système de recherche et affichage soigné des résultats.</p>
+            <div class="proj-tags"><span class="proj-tag">JavaScript</span><span class="proj-tag">Spotify API</span><span class="proj-tag">OAuth</span><span class="proj-tag">Recherche</span></div>
+          </div>
+          <div class="proj-footer"><a href="https://github.com/AM3X-svg/tpapispotify" target="_blank" class="xp-btn">📂 Code</a><span class="badge-type badge-api">API</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div id="contact-win" class="win fadein">
+    <div class="win-title">
+      <span>📧</span> Contact — Envoyer un message
+      <div class="win-controls"><button class="win-btn win-btn-min">─</button><button class="win-btn win-btn-max">□</button><button class="win-btn win-btn-cls">✕</button></div>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--text2);font-size:12px;margin-bottom:14px">Ouvert aux opportunités de stage, d'alternance et de collaboration.</p>
+      <div class="contact-grid">
+        <a href="https://github.com/AM3X-svg" target="_blank" rel="noopener" class="contact-row">
+          <div class="contact-icon ci-gh"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.6-2.67-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02.005 2.05.14 3.01.4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg></div>
+          <div><div class="contact-label">GitHub</div><div class="contact-url">github.com/AM3X-svg</div></div>
+        </a>
+        <a href="https://www.linkedin.com/in/alexandre-k-801438256/" target="_blank" rel="noopener" class="contact-row">
+          <div class="contact-icon ci-li"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg></div>
+          <div><div class="contact-label">LinkedIn</div><div class="contact-url">linkedin.com/in/alexandre-k-801438256</div></div>
+        </a>
+      </div>
+    </div>
+    <div class="status-bar">🔒 alexandre.klotz &middot; Formation cybersécurité</div>
+  </div>
+
+</main>
+
+<footer>© 2025 Alexandre KLOTZ &middot; HTML / CSS / JS vanilla &middot; Déployé sur Vercel</footer>
+
+<script>
+  function scroll_to(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  function tick() { var d = new Date(); document.getElementById('clock').textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+  tick(); setInterval(tick, 10000);
+  var obs = new IntersectionObserver(function(entries) { entries.forEach(function(e,i){ if(e.isIntersecting){ setTimeout(function(){ e.target.classList.add('show'); }, i*60); obs.unobserve(e.target); } }); }, { threshold: 0.08 });
+  document.querySelectorAll('.fadein').forEach(function(el){ obs.observe(el); });
+  document.querySelectorAll('.nav-tab').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); var t = document.querySelector(a.getAttribute('href')); if(t) t.scrollIntoView({ behavior:'smooth', block:'start' }); document.querySelectorAll('.nav-tab').forEach(function(x){ x.classList.remove('active'); }); a.classList.add('active'); }); });
+</script>
+</body>
+</html>
