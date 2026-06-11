@@ -772,7 +772,7 @@
     async function fetchLeaderboard(){
       // 1. Try global API
       try{
-        const r = await fetch('/api/leaderboard', {cache:'no-store'});
+        const r = await fetch('/api/leaderboard?all=1', {cache:'no-store'});
         if(r.ok){
           const j = await r.json();
           const rows = j.rows || j;
