@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boutique Cyberpunk — Alexandre KLOTZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    /* Copied minimal theme from index.html to keep consistent look */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sky1: #c8e8ff; --sky2: #e8f6ff; --sky3: #a0d4f5;
+      --glass: rgba(255,255,255,0.45); --glass2: rgba(255,255,255,0.25);
+      --glass-border: rgba(255,255,255,0.8);
+      --accent: #0078d4; --accent2: #00b4ff;
+      --green: #3cb371; --text: #1a2a3a; --text2: #4a6080;
+      --xp-title: linear-gradient(180deg,#5897ea 0%,#3a6bc4 100%);
+      --xp-btn: linear-gradient(180deg,#f0f8ff 0%,#c8e0f8 50%,#a8ccf0 51%,#d0e8fc 100%);
+      --xp-btn-border: #6699cc;
+    }
+    body { font-family: 'Tahoma', 'Segoe UI', sans-serif; font-size: 13px; color: var(--text); min-height:100vh; background: linear-gradient(180deg, #e8f6ff 0%, #f0faff 40%); padding:24px; }
+    a.xp-btn { display:inline-flex; align-items:center; gap:8px; background:var(--xp-btn); border:1px solid var(--xp-btn-border); padding:6px 12px; border-radius:6px; text-decoration:none; color:var(--text); font-weight:700; }
+    .win { background:var(--glass); backdrop-filter: blur(12px); border-radius:8px; border:1px solid var(--glass-border); box-shadow:0 8px 32px rgba(0,80,160,.12); overflow:hidden; }
+    .win-title { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--xp-title); color:#fff; font-weight:700; }
+    .win-body { padding:14px; }
+    .proj-hero { display:flex; gap:16px; align-items:flex-start; }
+    .proj-info { flex:1; }
+    .proj-title { font-size:20px; font-weight:800; color:#003b7a; margin-bottom:6px; }
+    .proj-desc { color:var(--text2); margin-bottom:12px; }
+    .proj-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .proj-tag { font-size:11px; padding:4px 8px; border-radius:10px; background:rgba(0,100,200,.08); border:1px solid rgba(0,100,200,.12); color:#0055aa; font-weight:700; }
+
+    /* Gallery */
+    .gallery { border:1px dashed rgba(0,80,160,.12); background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.15)); padding:12px; border-radius:8px; }
+    .gallery-drop { min-height:160px; display:flex; align-items:center; justify-content:center; color:var(--text2); border-radius:6px; background:rgba(255,255,255,.2); position:relative; overflow:hidden; }
+    .thumbs { display:grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap:8px; margin-top:12px; }
+    .thumb { border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,.06); background:#fff; display:flex; align-items:center; justify-content:center; padding:6px; }
+    .thumb img { max-width:100%; height:auto; display:block; }
+
+    .controls-row { display:flex; gap:8px; margin-top:12px; }
+    .back-link { text-decoration:none; color:var(--text); font-weight:700; }
+    footer { margin-top:18px; font-size:12px; color:var(--text2); }
+
+    @media (max-width:640px) { .proj-hero { flex-direction:column; align-items:center; text-align:center; } }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">◀ Retour au portfolio</a>
+  <div style="height:12px"></div>
+  <div class="win">
+    <div class="win-title">🛒 Boutique Cyberpunk — Détails</div>
+    <div class="win-body">
+      <div class="proj-hero">
+        <div style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg,#b8e0ff,#d0f0c0);display:flex;align-items:center;justify-content:center;font-weight:800;color:#2255aa">BC</div>
+        <div class="proj-info">
+          <div class="proj-title">Boutique Cyberpunk</div>
+          <p class="proj-desc">Boutique thématique avec gestion du catalogue, variations visuelles, panier et système d'authentification. Conçu pour l'UX et la logique côté client.</p>
+          <div class="proj-meta">
+            <span class="proj-tag">JavaScript</span>
+            <span class="proj-tag">HTML/CSS</span>
+            <span class="proj-tag">Auth</span>
+            <span class="proj-tag">Stock</span>
+          </div>
+          <div class="controls-row">
+            <a class="xp-btn" href="https://github.com/enzocauchi/livrables-boutique-js-amex" target="_blank" rel="noopener">📂 Code</a>
+            <a class="xp-btn" href="#gallery">🖼️ Ajouter / Prévisualiser images</a>
+          </div>
+        </div>
+      </div>
+
+      <hr style="margin:14px 0;border:none;border-top:1px solid rgba(0,0,0,.06)"/>
+
+      <h3 style="margin-bottom:8px">Galerie / Screenshots</h3>
+      <div id="gallery" class="gallery">
+        <div id="drop" class="gallery-drop">Déposer des images ici ou utiliser le bouton "Ajouter des images" — aperçu local (les images ne sont pas copiées sur le site serveur).</div>
+        <div class="thumbs" id="thumbs"></div>
+        <div style="margin-top:10px;"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"/></div>
+        <div style="margin-top:8px"><button class="xp-btn" id="pick">🖼️ Ajouter des images</button>
+        <button class="xp-btn" id="clear" style="background:#ffdede;border-color:#ff9a9a">🗑️ Effacer aperçu</button></div>
+        <p style="margin-top:10px;color:var(--text2);font-size:12px">Conseil: pour que les images soient servies par le site, placez-les dans projects/images/boutique-cyberpunk/ et référez-les ensuite dans ce fichier HTML.</p>
+      </div>
+
+      <hr style="margin:14px 0;border:none;border-top:1px solid rgba(0,0,0,.06)"/>
+      <h4>Fonctionnalités clés</h4>
+      <ul style="color:var(--text2);margin-left:18px;margin-top:8px">
+        <li>Catalogue avec filtres et variantes couleur</li>
+        <li>Panier persistant côté client (localStorage)</li>
+        <li>Authentification simple (simulateur)</li>
+        <li>Animations subtiles pour amélioration UX</li>
+      </ul>
+
+      <footer>Astuce: pour ajouter des images permanentes, créez le dossier projects/images/boutique-cyberpunk/ et référencez les fichiers ici.</footer>
+    </div>
+  </div>
+
+  <script>
+    // simple client-side gallery preview (does not upload)
+    (function(){
+      var drop = document.getElementById('drop');
+      var thumbs = document.getElementById('thumbs');
+      var input = document.getElementById('fileinput');
+      var pick = document.getElementById('pick');
+      var clear = document.getElementById('clear');
+      function showFiles(files){
+        for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image/')) return; var r=new FileReader(); r.onload=function(e){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=e.target.result; d.appendChild(img); thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }
+      }
+      pick.addEventListener('click', function(){ input.click(); });
+      input.addEventListener('change', function(e){ showFiles(e.target.files); });
+      drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.style.opacity=0.85; });
+      drop.addEventListener('dragleave', function(e){ drop.style.opacity=''; });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); drop.style.opacity=''; showFiles(e.dataTransfer.files); });
+      clear.addEventListener('click', function(){ thumbs.innerHTML=''; input.value=''; });
+    })();
+  </script>
+</body>
+</html>

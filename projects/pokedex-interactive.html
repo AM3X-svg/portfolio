@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokédex Interactif — Alexandre KLOTZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    /* Minimal theme copy to match index */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --text:#1a2a3a; --text2:#4a6080; --glass:rgba(255,255,255,.45); --glass-border:rgba(255,255,255,.8); --xp-title:linear-gradient(180deg,#5897ea,#3a6bc4); --xp-btn:linear-gradient(180deg,#f0f8ff,#c8e0f8); }
+    body{font-family:Tahoma,Segoe UI,sans-serif;background:linear-gradient(180deg,#e8f6ff,#f0faff);padding:22px;color:var(--text)}
+    .win{background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;box-shadow:0 12px 28px rgba(0,80,160,.12);overflow:hidden}
+    .win-title{padding:10px 12px;background:var(--xp-title);color:#fff;font-weight:800}
+    .win-body{padding:14px}
+    .proj-title{font-size:20px;font-weight:800;color:#003b7a;margin-bottom:6px}
+    .proj-desc{color:var(--text2);margin-bottom:12px}
+    .proj-tag{font-size:11px;padding:4px 8px;border-radius:10px;background:rgba(0,140,255,.08);border:1px solid rgba(0,140,255,.12);color:#005aaa}
+    .gallery{border:1px dashed rgba(0,80,160,.12);padding:10px;border-radius:8px;margin-top:12px}
+    .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:12px}
+    .thumb{border-radius:6px;overflow:hidden;border:1px solid rgba(0,0,0,.06);background:#fff;padding:6px;}
+    footer{margin-top:14px;color:var(--text2)}
+  </style>
+</head>
+<body>
+  <a href="../index.html" style="font-weight:700;">◀ Retour au portfolio</a>
+  <div style="height:12px"></div>
+  <div class="win">
+    <div class="win-title">⚡ Pokédex Interactif — Détails</div>
+    <div class="win-body">
+      <div class="proj-title">Pokédex Interactif</div>
+      <p class="proj-desc">Application consommant l'API Pokémon avec filtres multi-critères, favoris et affichage détaillé. Démo locale: tri, recherche, et favori persistant.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><span class="proj-tag">JavaScript</span><span class="proj-tag">REST API</span><span class="proj-tag">Filtres</span><span class="proj-tag">Favoris</span></div>
+
+      <div>
+        <h4>Live preview / images</h4>
+        <div class="gallery" id="gallery">Glisser-déposer des captures d'écran ou utiliser le bouton ci-dessous pour prévisualiser localement.</div>
+        <div class="thumbs" id="thumbs"></div>
+        <div style="margin-top:10px;"><input id="fileinput" type="file" accept="image/*" multiple style="display:none"/><button class="xp-btn" id="pick">🖼️ Ajouter des images</button> <button class="xp-btn" id="clear" style="background:#ffdede;border-color:#ff9a9a">Effacer</button></div>
+        <p style="margin-top:8px;color:var(--text2)">Pour rendre les images permanentes sur le site, déposez-les dans projects/images/pokedex-interactive/ et référencez-les dans ce fichier HTML.</p>
+      </div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,.06)"/>
+      <h4>Fonctionnalités proposées</h4>
+      <ul style="color:var(--text2);margin-left:18px;margin-top:8px">
+        <li>Recherche instantanée</li>
+        <li>Filtrage par type / génération</li>
+        <li>Favoris persistants (localStorage)</li>
+        <li>Mini-démo d'appel API avec retour d'erreurs lisible</li>
+      </ul>
+
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a class="xp-btn" href="https://github.com/AM3X-svg/choubigroupgroupietracker" target="_blank">📂 Code</a></div>
+      <footer>Astuce: créez projects/images/pokedex-interactive/ pour ajouter des images servies par le site.</footer>
+    </div>
+  </div>
+
+  <script>
+    // basic preview script shared across pages
+    (function(){
+      var pick=document.getElementById('pick'), fi=document.getElementById('fileinput'), thumbs=document.getElementById('thumbs'), drop=document.getElementById('gallery');
+      pick.addEventListener('click',function(){fi.click()}); fi.addEventListener('change', function(e){ show(e.target.files) });
+      function show(files){ for(var i=0;i<files.length;i++){ (function(f){ if(!f.type.startsWith('image')) return; var r=new FileReader(); r.onload=function(ev){ var d=document.createElement('div'); d.className='thumb'; var img=document.createElement('img'); img.src=ev.target.result; d.appendChild(img); thumbs.appendChild(d); }; r.readAsDataURL(f); })(files[i]); }}
+      drop.addEventListener('dragover',function(e){ e.preventDefault(); drop.style.opacity=0.9; }); drop.addEventListener('dragleave',function(){ drop.style.opacity=''; }); drop.addEventListener('drop',function(e){ e.preventDefault(); drop.style.opacity=''; show(e.dataTransfer.files); });
+      document.getElementById('clear').addEventListener('click', function(){ thumbs.innerHTML=''; fi.value=''; });
+    })();
+  </script>
+</body>
+</html>
