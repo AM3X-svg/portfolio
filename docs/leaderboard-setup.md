@@ -6,12 +6,16 @@ Guide rapide pour activer le leaderboard global (Supabase + Vercel)
 2) Créer la table SQL
    - Dans SQL editor de Supabase, exécuter :
 
-     create table if not exists leaderboard (
-       id bigserial primary key,
-       user text not null,
-       score integer not null,
-       date timestamptz default now()
-     );
+    -- Remarque : "user" est un mot réservé en PostgreSQL. Utiliser "username" ci-dessous
+    create table if not exists leaderboard (
+      id bigserial primary key,
+      username text not null,
+      score integer not null,
+      date timestamptz default now()
+    );
+
+  -- Si tu préfères garder la colonne `user`, il faut la citer :
+  -- create table leaderboard ("user" text not null, score integer not null, date timestamptz default now());
 
    - Donner les permissions si besoin (pour tests, la clé anon peut suffire si les règles le permettent). Pour production, créer une policy permettant INSERT/SELECT depuis la clé que vous utilisez.
 
