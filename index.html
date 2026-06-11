@@ -737,10 +737,17 @@
       applyMove(e.key.replace('Arrow','').toLowerCase());
     });
 
-    // Touch swipe
+    // Touch swipe — prevent page scroll while interacting with the game on mobile
     let tx=null, ty=null;
     const gameEl = document.getElementById('game-win');
-    gameEl.addEventListener('touchstart', e=>{ const t=e.touches[0]; tx=t.clientX; ty=t.clientY; }, {passive:true});
+    // touchstart must be non-passive so we can prevent default on touchmove
+    gameEl.addEventListener('touchstart', e=>{
+      const t=e.touches[0]; tx=t.clientX; ty=t.clientY;
+    }, {passive:false});
+    // prevent page from scrolling when moving finger within the game
+    gameEl.addEventListener('touchmove', e=>{
+      if(tx===null) return; e.preventDefault(); // stops page scroll while interacting
+    }, {passive:false});
     gameEl.addEventListener('touchend', e=>{
       if(tx===null) return;
       const t=e.changedTouches[0];
