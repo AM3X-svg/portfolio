@@ -30,12 +30,19 @@
       background-attachment: fixed;
     }
     body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image:
-              url("IMG_0764.jpg");
-              background-repeat: no-repeat;
-      background-size: cover;
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
 
+      background-image: url("IMG_0764.jpg");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+
+      filter: blur(8px);
+      transform: scale(1.05); /* évite les bords visibles après le blur */
     }
     /* TASKBAR */
     #taskbar {
